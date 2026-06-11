@@ -517,6 +517,21 @@ html, body, .card, .topbar, .bnav, .row, .stat, .quote, .principle, .callout, .o
 /* ---------- quote meaning line ---------- */
 .qmean{margin:8px 0 2px;font-size:.8rem;color:var(--text-soft);line-height:1.5}
 .qmean span{font-family:'IBM Plex Mono',monospace;font-size:.58rem;letter-spacing:.18em;text-transform:uppercase;color:var(--qa,var(--brass));display:block;margin-bottom:2px}
+
+/* ---------- font size setting ---------- */
+html[data-fs="lg"]{font-size:17.5px}
+html[data-fs="xl"]{font-size:19px}
+/* ---------- bookmark stars ---------- */
+.starbtn{position:absolute;top:10px;right:10px;color:var(--slate-dim);padding:6px;border-radius:8px;line-height:1;font-size:1.05rem;transition:color .2s,transform .15s;z-index:2}
+.starbtn:hover{color:var(--brass)}
+.starbtn.on{color:var(--brass-hi)}
+.starbtn:active{transform:scale(.85)}
+.quote{position:relative;padding-right:40px}
+/* ---------- notes ---------- */
+.notebox{width:100%;min-height:90px;resize:vertical;background:var(--well-3);border:1px solid var(--line-soft);border-radius:12px;color:var(--foam);padding:12px;font-family:'IBM Plex Sans',sans-serif;font-size:.9rem;line-height:1.55}
+.notebox:focus{outline:none;border-color:var(--line)}
+/* ---------- welcome ---------- */
+.welcome-ic{font-size:1.9rem;margin-bottom:8px}
 </style>
 </head>
 <body>
@@ -585,6 +600,17 @@ const S = {
   lastVisit: Store.get('moc_lastVisit', null),
   streak: Store.get('moc_streak', 0),
   theme: Store.get('moc_theme', 'night'),
+  simRuns: Store.get('moc_simRuns', {}),
+  courseDays: Store.get('moc_courseDays', []),
+  courseChecks: Store.get('moc_courseChecks', {}),
+  doneCases: Store.get('moc_doneCases', []),
+  notes: Store.get('moc_notes', {}),
+  favQuotes: Store.get('moc_favQuotes', []),
+  favPhrases: Store.get('moc_favPhrases', []),
+  fontSize: Store.get('moc_fontSize', 'std'),
+  drillDay: Store.get('moc_drillDay', null),
+  seen: Store.get('moc_seen', false),
+  xpLog: Store.get('moc_xpLog', {}),
   moduleDates: Store.get('moc_moduleDates', {}),
   reviews: Store.get('moc_reviews', {}),
   assessDone: Store.get('moc_assess', false),
@@ -597,6 +623,9 @@ function save(){
   Store.set('moc_badges', S.badges); Store.set('moc_crew', S.crew);
   Store.set('moc_lastVisit', S.lastVisit); Store.set('moc_streak', S.streak);
   Store.set('moc_theme', S.theme); Store.set('moc_moduleDates', S.moduleDates); Store.set('moc_reviews', S.reviews);
+  Store.set('moc_simRuns', S.simRuns);
+  Store.set('moc_courseDays', S.courseDays); Store.set('moc_courseChecks', S.courseChecks); Store.set('moc_doneCases', S.doneCases);
+  Store.set('moc_notes', S.notes); Store.set('moc_favQuotes', S.favQuotes); Store.set('moc_favPhrases', S.favPhrases); Store.set('moc_fontSize', S.fontSize); Store.set('moc_drillDay', S.drillDay); Store.set('moc_seen', S.seen); Store.set('moc_xpLog', S.xpLog);
   Store.set('moc_assess', S.assessDone); Store.set('moc_sims', S.simsDone);
   Store.set('moc_qseen', S.quotesSeen);
 }
@@ -625,12 +654,14 @@ function nextRank(xp){ for (const k of RANKS) if (xp < k.xp) return k; return nu
 function leadershipScore(){
   const m = S.doneModules.length / MODULES.length;
   const sc = Math.min(1, S.doneScenarios.length / 24);
-  const t = Math.min(1, (S.simsDone.length + (S.assessDone?1:0)) / 4);
+  const t = Math.min(1, (S.simsDone.length + (S.assessDone?1:0)) / 7);
   const ch = Math.min(1, S.doneChallenges.length / 14);
   return Math.round(20 + 80 * (m*0.4 + sc*0.3 + t*0.18 + ch*0.12));
 }
 
 function addXP(n, msg){
+  const _d = Math.floor(Date.now()/864e5);
+  S.xpLog[_d] = (S.xpLog[_d]||0) + n;
   S.xp += n; save(); checkBadges();
   toast((msg || 'Progress logged') + '  +' + n + ' XP');
 }
@@ -1780,7 +1811,39 @@ const CHALLENGES = [
  'Practice the strategic pause: in one conversation, let a silence sit for five full seconds before filling it.',
  'Write down the three behaviors you want to be known for. Score yourself honestly on each for today.',
  'Defuse one moment of mess-room negativity by asking the complainer for a proposed solution — assign them dignity, not dismissal.',
- 'Run one drill or task debrief with a single question: "What would we do differently?" — and no blame for any answer.'
+ 'Run one drill or task debrief with a single question: "What would we do differently?" — and no blame for any answer.',
+ "Before giving any order today, silently answer: what does the listener gain? Frame it that way once.",
+ "Hold one conversation today at half your normal speaking speed. Notice who relaxes.",
+ "Find one job your crew does well that you have never acknowledged. Acknowledge it today, by name.",
+ "Walk through the engine room with no agenda. Greet five people. Learn one thing you did not know.",
+ "Pick your most routine order of the day and attach the reason to it, out loud.",
+ "Catch one rumor today. Replace it with facts before sunset — delivered by you.",
+ "Review one SMS procedure your crew skips steps on. Find out why before correcting anyone.",
+ "Today, let a junior finish every sentence without interruption. Every single one.",
+ "Identify the quietest moment of friction you saw this week. Address it today in under five minutes.",
+ "Ask the cook what the crew has been complaining about. The galley hears everything first.",
+ "Write three sentences about your worst leadership moment this contract. What would the best version of you have done?",
+ "Today, give one man a task one level above his rank, with your backup. Watch what happens.",
+ "Practice silence as a tool: in one conversation, ask your question and say nothing until they answer fully.",
+ "Find one safety rule you enforce but cannot explain. Learn its origin story today and share it at smoko.",
+ "Do a five-minute future drill: imagine your next emergency and rehearse your first three orders out loud, alone.",
+ "Hand one decision today entirely to the Bosun: state the goal and constraints, then ask for his plan.",
+ "Spot one man doing the right thing when he thinks nobody is watching. Tell him you saw it.",
+ "Check tonight's watch arrangements with fresh eyes: who is tired, who is new, who is distracted?",
+ "Today, correct one thing you would normally walk past. Small, calm, immediate.",
+ "Ask your most experienced rating: what is the most dangerous thing we do regularly? Listen completely.",
+ "Send one message upward today that contains only good news about a crew member.",
+ "Replace one written instruction with a two-minute face-to-face today. Compare the results.",
+ "Inspect your own desk, cabin, and office. The crew reads your standards from them too.",
+ "Find one process that needs three approvals where one would do. Propose simplifying it.",
+ "Today, when someone brings you a problem, ask first: what do you suggest? before offering anything.",
+ "Pick one man overdue for more responsibility. Take the first concrete step today.",
+ "Time how long your orders survive: pick one from yesterday and verify quietly whether it is still being followed.",
+ "Practice the recovery: the next time you are wrong today, say so in under ten seconds.",
+ "Ask a cadet to teach YOU something — anything from his studies. Status given is loyalty earned.",
+ "Identify which of your standing routines exists only because your predecessor did it. Keep it or kill it consciously.",
+ "Tonight, write tomorrow's three priorities before sleeping. Command the morning before it starts.",
+ "End the day with one question to yourself: who did I make better today? If the answer is nobody, plan tomorrow differently."
 ];
 
 /* ============ TOOLS DATA ============ */
@@ -1920,6 +1983,468 @@ const NEGO_SIM = {
  ]
 };
 
+/* ---------- extra assessment questions (total 20) ---------- */
+const ASSESS_EXTRA = [
+ {q:"You discover a problem that is partly your own fault. You:",o:[
+  {t:"Report it fully, including my part, with my fix already started",v:4},
+  {t:"Report it, but describe my part as vaguely as possible",v:2},
+  {t:"Fix it quietly and report nothing — no harm done",v:1},
+  {t:"Wait to see if anyone notices before deciding",v:3}]},
+ {q:"A new junior officer joins your department. In his first week you:",o:[
+  {t:"Give him a structured introduction: ship, people, standards, and one early win",v:4},
+  {t:"Let him find his feet — the sea teaches best",v:2},
+  {t:"Load him with paperwork to test his attitude",v:1},
+  {t:"Show him the essentials and check on him when I remember",v:3}]},
+ {q:"The crew is visibly tired near the end of a heavy port rotation. You:",o:[
+  {t:"Push through — schedules do not care about feelings",v:1},
+  {t:"Re-plan the work: cut what can wait, rotate the heavy jobs, protect rest hours",v:4},
+  {t:"Give a motivational speech about toughness",v:2},
+  {t:"Quietly lower the quality standard until things calm down",v:3}]},
+ {q:"You hear two crew members mocking another officer behind his back. You:",o:[
+  {t:"Join lightly — it builds my bond with the crew",v:1},
+  {t:"Say nothing; it is normal ship talk",v:2},
+  {t:"Stop it simply: 'Not like this — if there is a problem, it goes to him or to me'",v:4},
+  {t:"Report the two men to that officer",v:3}]},
+ {q:"How do you prepare for a difficult conversation?",o:[
+  {t:"I do not — I speak from the heart in the moment",v:2},
+  {t:"I write the facts, decide my goal, and choose my opening line",v:4},
+  {t:"I rehearse my arguments until I cannot lose",v:3},
+  {t:"I delay it and hope the problem solves itself",v:1}]},
+ {q:"Your daily work list is finished by 1500. You usually:",o:[
+  {t:"Walk the ship and invest in people, training, or the next problem",v:4},
+  {t:"Find more tasks for the crew — idle hands are dangerous",v:2},
+  {t:"Disappear into the office and emails",v:3},
+  {t:"Relax — finished is finished",v:1}]},
+ {q:"A rule in the SMS seems pointless to you. You:",o:[
+  {t:"Tell the crew openly that it is nonsense, but to follow it anyway",v:2},
+  {t:"Quietly let the crew skip it",v:1},
+  {t:"Follow it, find out its reason, and propose a change through channels if it truly fails",v:4},
+  {t:"Follow it without ever questioning",v:3}]},
+ {q:"During a drill, your team performs badly. Afterwards you:",o:[
+  {t:"List every failure in front of everyone so it stings",v:1},
+  {t:"Run a no-blame debrief: what happened, why, what we change — then re-drill it",v:4},
+  {t:"Note it for the records and move on",v:2},
+  {t:"Blame the drill scenario for being unrealistic",v:3}]},
+ {q:"You are offered a shortcut that saves three hours but bends one procedure. You:",o:[
+  {t:"Take it — results are what get remembered",v:1},
+  {t:"Take it once, but make sure nobody documents it",v:2},
+  {t:"Check why the procedure exists; if the risk is real, refuse and find another three hours",v:4},
+  {t:"Ask someone senior to take the decision instead",v:3}]},
+ {q:"What do you do in the last week of your contract?",o:[
+  {t:"Coast to the airport — the relief can sort things out",v:1},
+  {t:"Prepare a complete handover and finish what I started",v:4},
+  {t:"Finish my own paperwork and let the rest wait",v:3},
+  {t:"Start big new projects to leave my mark",v:2}]}
+];
+ASSESS_EXTRA.forEach(q => ASSESS.push(q));
+ASSESS_BANDS.length = 0;
+[{min:68, t:"Command-Ready Leader", b:"Your instincts run steadily toward fairness, calm authority, ownership, and follow-through. This is the profile crews follow willingly and offices promote. Your next level is range: deliberately practice the styles you use least — faster direct decisions if you over-consult, more delegation if you over-control."},
+ {min:54, t:"Strong Foundation, Some Sharpening Needed", b:"Most of your instincts are sound, with a few reactive habits under pressure — usually around public challenges, bad news, fatigue, or pressure from above. Find your lowest-scoring questions and train exactly those muscles for a month. They are usually the difference between a good Mate and a requested-by-name one."},
+ {min:38, t:"Transactional Leader", b:"You get compliance and the job done, but you probably lean on rank and convenience more than trust and systems. The risk: minimum effort, hidden problems, and a career ceiling. Start with the Psychology of Respect and Crew Motivation modules — visible fairness is your fastest win."},
+ {min:0, t:"Authority Under Strain", b:"Several instincts here — public force, favorites, shortcuts, punishing messengers — create the very problems they try to solve. The good news: these are habits, not character, and habits can be retrained. Start with Authority vs Fear and Conflict Resolution, and do one daily challenge every day this week."}
+].forEach(b => ASSESS_BANDS.push(b));
+
+/* ---------- extra personality traits (total 16) ---------- */
+[{t:"Makes quick decisions and lives with the results", d:0},
+ {t:"Uses humor to win people over and smooth problems", d:1},
+ {t:"Works at the same steady pace all day, every day", d:2},
+ {t:"Keeps personal records and checklists beyond what is required", d:3}
+].forEach(t => PERSONALITY.traits.push(t));
+
+/* ---------- PSC INSPECTION SIMULATOR ---------- */
+const PSC_SIM = {
+ title:"Inspection Simulator: The Hostile PSC Officer",
+ intro:"A Port State Control officer boards in a strict MOU port. He is short-tempered from the start, finds a corroded vent head within twenty minutes, and says: 'This ship looks tired. Maybe I should look at everything.' The Master is ashore. You are running the inspection.",
+ steps:[
+  {p:"At the vent head he photographs aggressively and says: 'Corroded through. Detainable, in my opinion. What else are you hiding?'",
+   o:[
+    {t:"'With respect, that corrosion is surface only — your detention threat is completely out of proportion.'",v:1,f:"You just told a hostile inspector he is wrong and emotional — in his port, on his form. Even if you are technically right, you gave him a personal reason to dig for four more hours."},
+    {t:"'You are right that it needs attention. I am ordering the fitter on it right now — you will see the repair before you leave. May I show you the vent maintenance records meanwhile?'",v:3,f:"Strong. You conceded the finding without conceding detention, started visible correction immediately, and redirected to evidence of a working system. Hostility has nothing to grip."},
+    {t:"'Nobody is hiding anything. Look wherever you want.'",v:2,f:"Defensive and slightly challenging. 'Look wherever you want' to an irritated inspector is an invitation he will accept — without an escort plan, on his terms."}]},
+  {p:"Later he stops an OS in the alleyway: 'You. Where is your muster station?' The OS freezes, then points the wrong way. The inspector smiles thinly and writes.",
+   o:[
+    {t:"'He knows it really — he is just nervous. Ask someone else.'",v:1,f:"Arguing with observed evidence destroys your credibility for the rest of the inspection. And asking to re-roll the dice with another crew member looks like a ship that manages appearances, not training."},
+    {t:"Say nothing, glare at the OS, and move the inspector along quickly.",v:2,f:"The glare tells the inspector — and the OS — that inspections are about blame aboard this ship. The crewman who gets punished for a wrong answer learns to avoid inspectors, which makes the next inspection worse."},
+    {t:"'That is not the answer it should be. He re-reads the muster list with the Third Officer today, and I will sample three more crew myself this week. Noted on my action list.'",v:3,f:"Perfect: own the gap instantly, show the correction machinery running, and protect the man by making it a system item, not a personal failure. Inspectors grade the response as much as the finding."}]},
+  {p:"Closing meeting. He lists the vent head, the muster answer, and a missing SOPEP signature. 'Three deficiencies. I am still considering the detention question.'",
+   o:[
+    {t:"'Before you finalize — here is the vent head repaired and photographed, the signature rectified per procedure, and my crew refresher scheduled with dates. I would ask you to record the response alongside the findings.'",v:3,f:"The complete close. Findings accepted, corrections evidenced in real time, and a polite, factual case for proportionate recording. Detention talk almost never survives a documented closing like this."},
+    {t:"'Record what you want. We both know none of this is detainable, and my company will appeal.'",v:1,f:"Threatening appeal in the closing meeting converts a wavering inspector into a committed one. Appeals exist — but you reach for them after the report, through the office, never as a closing-room weapon."},
+    {t:"'We accept everything. We are very sorry for the condition of the ship.'",v:2,f:"Over-apology validates his 'tired ship' theory and invites severity. You are not negotiating guilt — you are presenting evidence of a ship that responds. Accept findings, yes; volunteer shame, never."}]}
+ ],
+ bands:[
+  {min:8,t:"Inspection commander",b:"You absorbed hostility without feeding it, corrected in real time, protected your crew, and shaped the closing record with evidence. This is exactly how experienced Mates turn a hunting inspector into a routine one."},
+  {min:6,t:"Survived, with scars",b:"The inspection ended acceptably, but you fed the hostility at least once — through argument, blame, or over-apology. Review the pattern: own gaps fast, evidence corrections, never make it personal."},
+  {min:0,t:"You became the finding",b:"Your responses gave a hostile inspector personal reasons to escalate. Remember the rule: the inspector reads the officers more than the steel. Calm ownership plus visible correction is the entire game."}
+ ]
+};
+
+/* ---------- CRISIS COMMAND SIMULATOR ---------- */
+const CRISIS_SIM = {
+ title:"Crisis Simulator: Smoke in the Paint Locker",
+ intro:"1740, open sea. The forecastle smoke detector triggers; an AB confirms smoke from the paint locker vent. The fire party is mustering. The Master is on the bridge. As On-Scene Commander, your first minutes decide everything.",
+ steps:[
+  {p:"You arrive forward. Light smoke, hot door. Two young fire-party members stand frozen at the edge. The Bosun looks at you: 'Orders, Mate?'",
+   o:[
+    {t:"Grab the hose yourself and lead the boundary cooling from the front — the crew needs to see courage.",v:1,f:"The On-Scene Commander holding a nozzle is a team with no commander. Nobody is checking boundaries, sequencing the attack, or talking to the bridge. Courage is not the missing ingredient here — command is."},
+    {t:"Calm voice, named tasks: 'Reyes — boundary cooling hose two, go. Kumar — close that vent flap. Bosun — confirm locker CO2 lined up and report.'",v:3,f:"Exactly right. Named, specific tasks break the freeze — paralyzed people need a job, not a speech. Your lowered voice sets the temperature for the whole scene."},
+    {t:"Shout at the two frozen men to wake up and move — there is no time for nerves.",v:2,f:"Shouting at frozen men deepens the freeze and spreads the panic you are trying to contain. Freezing is a first-exposure reflex, not laziness. Name plus task unfreezes; volume does not."}]},
+  {p:"Boundary cooling is running. The bridge calls: 'Master here. Status, and your recommendation on CO2 release?'",
+   o:[
+    {t:"'Stand by, Captain — I will get back to you when things are clearer.'",v:1,f:"The bridge is blind without you, and the CO2 decision clock is running. Vague 'stand by' from the scene is how Masters end up deciding late, on no information. Report what you know NOW, however incomplete."},
+    {t:"'Locker boundary cooling effective, door hot but intact, no persons unaccounted, vent closed. Recommend CO2 release now while it is contained — confirm crew muster complete and I will seal.'",v:3,f:"Textbook crisis communication: short factual picture, clear recommendation, the safety pre-condition named. The Master can decide in ten seconds because you gave him a decision-shaped report."},
+    {t:"'It is under control, Captain. No need for CO2 — we will open the door and finish it with hoses.'",v:2,f:"Opening a hot locker door feeds the fire oxygen and risks a flash that injures your team — to save a CO2 charge. 'Under control' is a feeling; contained-and-smothered is a result. Use the fixed system; that is what it is for."}]},
+  {p:"CO2 released, boundaries cooling, situation stable. Now: the office is calling the bridge for updates, your fire party is exhausted, and re-flash watch must run all night.",
+   o:[
+    {t:"Stand the fire party down with thanks — the CO2 has done the job.",v:1,f:"Re-flash after CO2 is a classic killer; the compartment stays sealed and watched, with cooling checks, for many hours. Standing down now risks fighting the same fire again at 0200 with a tired crew and an empty CO2 bank."},
+    {t:"Organize the night: re-flash watch roster in short shifts, boundary temperature checks logged hourly, fresh men cycled in, food and water to the team — then debrief tomorrow, no blame, lessons only.",v:3,f:"The complete commander's close: the danger is managed for the full duration, the people are managed too, and the learning is captured without fear. The frozen men of step one will be twice as fast next time — because of how tonight ends."},
+    {t:"Keep the whole fire party on station all night — nobody rests until I am certain.",v:2,f:"Caution in the right direction, but an exhausted team all night is a safety hazard of its own, and it punishes the men who just performed. Rotation gives you the same vigilance with sustainable people."}]}
+ ],
+ bands:[
+  {min:8,t:"On-scene commander",b:"You commanded people instead of equipment, fed the bridge decision-ready information, used the fixed systems as designed, and managed the long tail of the emergency. This is what drills are supposed to produce."},
+  {min:6,t:"Fire out, lessons open",b:"The fire lost, but at least one command principle slipped — personal heroics, vague reporting, or the night watch. Review the sequence: command the scene, inform the bridge, respect re-flash."},
+  {min:0,t:"Won by luck",b:"The outcome may have been acceptable, but the method invited disaster — a commander on the nozzle, a blind bridge, or an opened hot door. Re-run the simulator and choose like the scene depends on it, because one day it will."}
+ ]
+};
+
+/* ---------- CREW CLIMATE CHECK ---------- */
+const TEAMCHECK = [
+ "Crew members report near-misses and small mistakes to me without being forced.",
+ "I could name, for each of my key men, what he is personally working toward.",
+ "Unpleasant jobs and overtime follow a rotation the crew can see and verify.",
+ "Junior officers and ratings ask questions freely in meetings and briefings.",
+ "Corrections aboard happen in private; recognition happens in public.",
+ "The deck and engine departments help each other without formal requests.",
+ "Standards hold at 0300 and in my absence, not only when I am watching.",
+ "New crew members are deliberately welcomed and brought up to speed.",
+ "Bad news reaches me early, while it is still small.",
+ "If I left tomorrow, the department would run to standard for weeks."
+];
+const TEAM_BANDS = [
+ {min:17, t:"Healthy command climate", b:"Your team shows the markers of trust, fairness, and self-sustaining standards. Protect it: climates decay silently under schedule pressure and crew change. Re-run this check mid-contract and after every major crew rotation."},
+ {min:12, t:"Stable, with soft spots", b:"The foundation is there, but the items you scored low are exactly where problems will surface first — usually reporting culture or fairness visibility. Pick the two weakest items and work them deliberately for a month, then re-check."},
+ {min:7,  t:"Strained climate", b:"Several core systems — honesty upward, visible fairness, standards without supervision — are weak. Expect hidden problems and minimum effort until they are rebuilt. Start with the Psychology of Respect and High-Performance Teams modules, and fix the fairness items first; they repair fastest."},
+ {min:0,  t:"Climate in distress", b:"By this self-assessment, the crew likely works on compliance and fear, not trust. The honest score is the first repair — most leaders in this position never measure. Begin with one habit: react well to the next three pieces of bad news, and build from there."}
+];
+
+/* ---------- LEADERSHIP PHRASEBOOK ---------- */
+const PHRASES = [
+ { c:"Correcting a man", items:[
+   {s:"This is about what happened this morning — nothing else. I want your side before I decide anything.", w:"Opening a correction. Limits the scope, promises fairness, lowers defenses."},
+   {s:"A man with your experience — this is not your real standard. Show me your best version.", w:"Correcting a proud senior hand. Protects his identity while rejecting the work."},
+   {s:"The job was four hours to standard. It took two days and I found three defects. Walk me through what happened.", w:"Confronting underperformance. Facts and a question — no character attack."},
+   {s:"You stay until properly relieved. If there is a relief problem, you bring it to me — you do not solve it by walking off.", w:"Setting the expectation after naming behavior and impact (the BIE script)."}]},
+ { c:"Praising and motivating", items:[
+   {s:"Your re-check in hold 3 caught a real problem before the weather did. Good seamanship.", w:"Specific praise. Name the act and why it mattered — never just 'good job'."},
+   {s:"We had a ballast discrepancy. I need exact soundings so we find it before it finds us.", w:"Attaching purpose to a routine order. Reasons turn tasks into missions."},
+   {s:"You did this job last voyage — what would you change?", w:"Inviting input from men whose culture waits to be asked. Use the name, make it safe."},
+   {s:"The deck copies you, not me. That is why your standard has to be perfect.", w:"Recruiting a senior man's pride to enforce a standard."}]},
+ { c:"Refusing pressure from above or ashore", items:[
+   {s:"I understand the pressure, and I want to help you meet it. I cannot do it this way because of [the limit]. Here is what I can do: [alternative].", w:"The universal refusal: empathy, the limit, the alternative — in that order."},
+   {s:"Shall I put that in writing so we are both covered?", w:"Closing an unsafe-instruction conversation. Usually ends it on the spot."},
+   {s:"I sign what the ship measured.", w:"Cargo figures, draft surveys, mate receipts. Five words, no apology."},
+   {s:"Please show me the regulation, so I can comply exactly.", w:"Against invented deficiencies and shakedowns. Polite, procedural, expensive to argue with."}]},
+ { c:"Cooling a hot moment", items:[
+   {s:"I can see you are angry, and I will hear all of it — but not like this, and not here. My office at [time]. You have my word you get a fair hearing.", w:"Open anger on deck. Removes the audience, promises justice, keeps authority."},
+   {s:"It sounds like you feel this was unfair.", w:"The label. Naming the feeling defuses it. You are acknowledging, not agreeing."},
+   {s:"Let us reset — take the forward station, we talk after stations.", w:"Giving a cornered man an exit with dignity. Crews remember face-saving for years."},
+   {s:"You feel cheated — and if I felt cheated I would be angry too. Now show me the hours and we fix it.", w:"Label plus immediate path to facts. Stops shouting by making it unnecessary."}]},
+ { c:"Inspections and audits", items:[
+   {s:"You are right about that item. I am ordering the repair now — you will see it before you leave.", w:"Owning a finding. Real-time correction takes the fuel out of hostility."},
+   {s:"That is not the answer it should be — we correct that today, and I will sample more crew myself this week.", w:"When a crew member fails an inspector question. Own the gap, protect the man, show the system."},
+   {s:"Here is the item repaired and photographed, and the refresher scheduled with dates. I would ask you to record the response alongside the findings.", w:"Closing meeting. Evidence-based case for proportionate recording."}]},
+ { c:"Supporting a man in trouble", items:[
+   {s:"Three weeks ago you were the best hand on this deck. Something changed. What is going on?", w:"Sudden performance collapse. Respect plus the direct question usually opens the door."},
+   {s:"Good that you said it now. Walk me through it.", w:"Reacting to admitted mistakes. This sentence buys a reporting culture."},
+   {s:"Better for your head can be true — and I will choose the work with you. Days, company, and a phone line home come first.", w:"A grieving man who wants to keep working. Respect the wish, control the risk."},
+   {s:"That call was mine and it was wrong. Here is what I am changing so it does not repeat.", w:"Owning your own mistake. Accountability without self-destruction."}]}
+];
+
+/* ---------- additional simulator scenarios ---------- */
+const CONVO_SIM2 = {
+ title:"The Senior Rating Who Smells of Alcohol",
+ intro:"0750, before cargo watch. Your most experienced AB — fifteen years, never a problem — reports for duty and you catch a clear smell of alcohol. He sees that you noticed. The deck is waiting and the gangs board in forty minutes.",
+ steps:[
+  {p:"He speaks first, quietly: 'Mate, it was my daughter's wedding call last night. One drink with the family on video. I am fine to work.'",
+   o:[
+    {t:"'One drink does not smell like this at 0750. You are off the cargo watch as of now — we talk in my office, and the policy decides the rest.'",v:3,f:"Correct and humane in the right order: the safety decision first, instantly and without debate. The story may even be true — and it changes nothing about working this watch."},
+    {t:"'It is your daughter's wedding — I understand. Drink water, stay off the crane, and keep away from the inspectors today.'",v:1,f:"You just became a co-conspirator. If anything happens on that watch — to him or caused by him — the investigation will find that you knew. Sympathy is right; the cover-up is not."},
+    {t:"'Fine to work? We will see what the Master says about that.'",v:2,f:"Escalating immediately, before securing the situation or hearing him properly, skips your own duty. Pull him from duty first; the formal process comes after, with facts."}]},
+  {p:"In your office he breaks: 'Twenty minutes on a video call to my family while everyone celebrated without me. Yes, more than one drink. Fifteen years, Mate — please do not end me over one night.'",
+   o:[
+    {t:"'Fifteen years is exactly why this goes by the book and not by my mood. The policy protects you too — a test, a record, a clean process. What I will also do: tell the Master what kind of seafarer you have been for fifteen years.'",v:3,f:"The line that saves both the standard and the man: procedure without hatred, plus your honest advocacy inside the process. He hears that the system is firm and that he is not alone in it."},
+    {t:"'I understand. We forget this one time — but you owe me, and if it ever repeats, everything comes out.'",v:1,f:"You converted a safety policy into a personal debt. He now works under blackmail, you carry a secret, and the crew — who notice everything — learn that rules are negotiable for favorites."},
+    {t:"'You should have thought about that last night. The report goes in as it goes in.'",v:2,f:"Procedurally correct, humanly empty. The process will run anyway — but stripping a broken fifteen-year man of all dignity teaches the crew that one bad night erases everything. Firmness does not require coldness."}]},
+  {p:"The process runs: test, report, Master informed. Three days later he works again, ashamed, avoiding your eyes. The deck crew is watching how this ends.",
+   o:[
+    {t:"Avoid him too — better that the awkwardness fades by itself.",v:1,f:"Silence reads as permanent judgment. A valuable man drifts toward resentment or resignation, and the crew concludes that one mistake aboard means social exile. The case closed on paper but never closed on deck."},
+    {t:"Find him at a quiet moment: 'The matter is closed. Your record before it still stands, and what you do from today is what counts. I have a hatch survey tomorrow — I want your eyes on it.'",v:3,f:"The complete close: the consequence stood, and now the man returns to full membership with a visible task that says trust. The crew sees the whole arc — firm process, real redemption. That is culture being built."},
+    {t:"Use him as the example at the next safety meeting — anonymously, but everyone will know.",v:2,f:"The lesson is real but the price is his face, again, after the process already concluded. Teach the policy without re-trying the man; the crew already absorbed the real lesson by watching."}]}
+ ],
+ bands:[
+  {min:8,t:"Firm hand, human heart",b:"You secured safety instantly, ran the process without cruelty, advocated honestly, and closed the loop with restored trust. This is the hardest conversation type aboard — and you handled the standard and the man."},
+  {min:6,t:"Standard held, repair incomplete",b:"The safety call and process were right, but the human side — advocacy or the return to trust — was left open. Unfinished endings quietly cost you the man and teach the crew that mistakes are forever."},
+  {min:0,t:"A dangerous kindness or a needless cruelty",b:"Either you covered for him — owning every consequence that followed — or you processed him like paperwork. Review: safety first, procedure without hatred, dignity in the return."}
+ ]
+};
+
+const CONVO_SIM3 = {
+ title:"The AB Who Wants to Sign Off Mid-Contract",
+ intro:"A reliable AB asks to see you and says flat: 'I want to sign off in the next port. I am done.' Four months remain on his contract. Losing him mid-rotation hurts — and something is clearly underneath this.",
+ steps:[
+  {p:"He sits stiffly: 'Personal reasons, Mate. Just arrange it. The contract has an early-release clause, I checked.'",
+   o:[
+    {t:"'You checked the clause — so this is serious and planned, not a bad week. Before I touch any paperwork: what happened? Start anywhere.'",v:3,f:"You read the signal correctly: a man who researched the clause has been unhappy for a while. The open question, without resistance, is the only way to find what is actually driving this."},
+    {t:"'Mid-contract sign-off costs you the bonus and probably the next contract with this company. Think very carefully.'",v:2,f:"All true — and all threat. Leading with consequences before understanding tells him the ship cares about its rota, not its man. If he stays after this, he stays bitter."},
+    {t:"'Done. I will email crewing today.'",v:1,f:"Fast, painless, and a complete leadership failure. You may be processing away a fixable problem — and the crew learns that the exit interview aboard this ship takes thirty seconds."}]},
+  {p:"It comes out slowly: his wife is overwhelmed at home with a sick parent, and — he hesitates — 'and honestly, Mate, since the new Bosun came, every day here is misery. I am invisible or I am wrong. Nothing in between.'",
+   o:[
+    {t:"'Two different problems, and I will take both seriously. The family side: let us look at options today — leave dates, a shorter extension, more call time. The Bosun side: that is mine to fix, and I will — without your name in it. Give me two weeks before crewing hears anything.'",v:3,f:"You separated the strands correctly: the family pressure needs options, the Bosun problem needs your intervention, and the two-week frame turns a resignation into a managed situation. 'Without your name' is what makes the honesty safe."},
+    {t:"'The Bosun is hard on everyone — that is just his way. The family thing I understand; let us focus on that.'",v:1,f:"You just dismissed the half he found hardest to say. 'That is just his way' is how toxic supervision gets a license. He will not raise it again — with you or anyone — and the sign-off stands."},
+    {t:"'Why did you not come to me about the Bosun months ago?'",v:2,f:"A fair question with terrible timing — it puts blame on the man at his most vulnerable moment. The answer is obvious anyway: men do not report their direct boss until they are already at the door."}]},
+  {p:"Two weeks later: you adjusted his duties from under the Bosun's worst patterns, had a hard private talk with the Bosun about all hands (not one name), and crewing found a 30-day-early relief option. He comes to you: 'Things are... better. Maybe I finish the contract. Maybe.'",
+   o:[
+    {t:"'Maybe is enough for today. The early option stays open either way — your family side has not changed. Decide at month-end, and whatever you choose, you leave or stay as a man this ship values.'",v:3,f:"The masterstroke is keeping the exit open: pressure to stay would poison the repair. A man who stays freely works like a free man; a man who stays trapped works like a prisoner. Either ending is now a good one."},
+    {t:"'Good — I will tell crewing to cancel the early option then.'",v:1,f:"You just converted his 'maybe' into a closed door. The family pressure that started this is still real; removing his exit re-creates the trapped feeling that made every Bosun friction unbearable."},
+    {t:"'I went out on a limb for you with the Bosun and crewing. I hope that counts for something.'",v:2,f:"Presenting the invoice converts your leadership into a debt. He will stay out of obligation, briefly, and leave anyway — now with the lesson that help aboard comes with strings."}]}
+ ],
+ bands:[
+  {min:8,t:"The retention conversation, mastered",b:"You found the real causes under 'personal reasons', fixed what the ship could fix, protected his honesty, and left him free. Most mid-contract sign-offs are exactly this conversation, done badly or never done."},
+  {min:6,t:"Partial save",b:"You addressed one strand and dropped the other — usually the supervision problem, which is the harder one to hear and act on. Half-fixed reasons for leaving regrow."},
+  {min:0,t:"Processed, not led",b:"The paperwork path was always available; leadership was the other path. A reliable man's exit interview is the cheapest organizational intelligence aboard — and the last chance to act on it."}
+ ]
+};
+
+const NEGO_SIM2 = {
+ title:"Negotiation: The Drydock Repair List Cut",
+ intro:"Two weeks before drydock, the superintendent calls: budget pressure, your deck repair list must shrink by 30 percent. On the list: hatch coaming cracks, anchor windlass overhaul, two ballast tank coating repairs, and accommodation items. Negotiate the cut.",
+ steps:[
+  {p:"Superintendent: 'Thirty percent, Chief. I know every Mate says his list is all critical. Pick the cuts yourself or I pick them for you.'",
+   o:[
+    {t:"'My list is all critical. Cutting any of it is on your signature, not mine.'",v:1,f:"All-critical is exactly the claim he has heard from every ship — it reads as no information. And inviting him to cut blindly means the windlass loses to a spreadsheet. You just gave away your seat at the table."},
+    {t:"'Understood — budget is real. Before percentages: let me re-send the list ranked by consequence — class items, safety-critical, cost-of-delay, and comfort. Then we cut from the bottom together. Some of these get more expensive every month we wait.'",v:3,f:"You accepted his constraint, changed the currency from percent to consequence, and made yourself the co-author of the cut instead of its victim. 'More expensive every month' reframes deferral as cost, not saving."},
+    {t:"'Fine. Cut the accommodation items and one ballast tank, that is about 30 percent.'",v:2,f:"Fast cooperation, but you conceded a full tank coating in the first minute without testing alternatives — partial repair, owner-supplied paint, next-docking deferral with monitoring. First offers in your own negotiation should never be your maximum concession."}]},
+  {p:"He reviews your ranked list: 'Class items stay, obviously. But the windlass overhaul is huge money. Grease it, monitor it, next docking.'",
+   o:[
+    {t:"'The windlass brake slipped twice this year — here are the two near-miss reports and the vibration readings. If it fails in an emergency anchoring, the cost is not a docking line item. I can give you savings instead: partial coating on tank 4 port side only, and all accommodation items deferred — that covers most of your 30 percent and the windlass stays.'",v:3,f:"The winning structure: evidence for the non-negotiable item, and a pre-packaged alternative saving so his budget problem still gets solved. You are not fighting his target — you are redirecting it."},
+    {t:"'If the windlass goes, I will make sure everyone knows who deferred it.'",v:1,f:"A threat to your own superintendent converts a budget discussion into a personal conflict with the man who plans your dockings, spares, and promotion inputs — and threats from below rarely move budgets anyway. Evidence moves budgets."},
+    {t:"'You are the superintendent — if you say monitor, we monitor.'",v:2,f:"Deference is not loyalty when you hold safety information he lacks. He cannot weigh near-miss reports he has never seen. Surrendering your data is the quiet version of failing him."}]},
+  {p:"He accepts the package but pushes once more: 'The near-miss reports stay between us, yes? No need to alarm the office system with old news.'",
+   o:[
+    {t:"'They are already in the system — that is where they live, and honestly that protects your deferral decisions too: everything you approved was documented and reasoned. Clean file, clean conscience, clean audit.'",v:3,f:"The perfect close: the records stay where procedure puts them, framed as protection for HIM. You refused the burial without accusing him of asking for one — and the relationship survives intact."},
+    {t:"'Understood — between us.'",v:1,f:"You just agreed to suppress safety records as a relationship favor. If the windlass story ever surfaces, the suppression — with your agreement — becomes the headline. Some yeses cost more than any docking."},
+    {t:"'That sounds like asking me to hide safety reports. Should I be documenting this conversation?'",v:2,f:"The principle is right; the prosecutor tone burns the bridge you just built. The same refusal framed as mutual protection achieves everything without making an enemy of your own superintendent."}]}
+ ],
+ bands:[
+  {min:8,t:"Budget-table negotiator",b:"You converted a blind percentage cut into a consequence-ranked decision, defended the safety-critical item with evidence, packaged the savings yourself, and kept the records clean while keeping the relationship. This is exactly how good Mates fight drydock battles."},
+  {min:6,t:"List survived, leverage spent",b:"The critical items probably survived, but you either conceded too early, leaned on threat instead of evidence, or handled the records question clumsily. The drydock after this one is also a negotiation — protect the relationship that runs it."},
+  {min:0,t:"Cut by spreadsheet",b:"The windlass — or your integrity — went under the budget knife. Remember the sequence: rank by consequence, evidence the critical, package the savings, and never bury the paper trail."}
+ ]
+};
+
+const PSC_SIM2 = {
+ title:"Vetting Simulator: The Rest-Hour Discrepancy",
+ intro:"A vetting inspector cross-checks your rest-hour records against the port log and cargo timesheets. He finds it: your Second Officer's records show full rest on a night the timesheets place him at cargo watch handover. He lays both documents on the table and waits.",
+ steps:[
+  {p:"Inspector, evenly: 'These two documents cannot both be true, Chief Officer. Explain it to me.'",
+   o:[
+    {t:"'You are right — they conflict, and I cannot explain it from memory. Give me thirty minutes with the Second Officer and the original logs, and I will bring you the true picture, whatever it is.'",v:3,f:"The only sustainable answer: acknowledge the conflict, refuse to invent, and commit to the truth on a deadline. Inspectors meet improvised explanations daily; honest investigation is rarer and lands better."},
+    {t:"'Probably a clerical error in the timesheet — the terminal makes them sloppily here.'",v:1,f:"You just guessed, under oath in spirit, in the direction most convenient to the ship. If he then interviews the Second Officer and gets a different story, a record discrepancy has become an integrity finding — about you."},
+    {t:"'Rest-hour software rounds the periods sometimes. It is a known system issue.'",v:2,f:"A semi-technical deflection he has heard before. Even if partly true, leading with the software instead of the investigation looks like a ship that explains discrepancies rather than resolving them."}]},
+  {p:"The truth, from the Second Officer: he covered an extra handover during the port rush, and 'adjusted' his own record afterward so the violation would not show. He is pale: 'I did not want to make problems for the ship, Mate.'",
+   o:[
+    {t:"Return to the inspector with it straight: 'The timesheet is correct. My Second Officer exceeded limits covering a handover and then mis-recorded it — wrongly, and we will treat both parts: the schedule that forced it, and the recording. Here is the corrected record and my action plan.'",v:3,f:"Brutal and right. You converted a concealed violation into a demonstrated safety culture: the truth surfaced, the system responded, the root cause (the schedule) is named. Vetting inspectors literally grade for this."},
+    {t:"Tell the inspector: 'The Second Officer confirms the rest record. The timesheet must be the terminal's error.'",v:1,f:"You are now the author of the lie. If this surfaces — and cross-checks exist precisely because it surfaces — the report will read falsification with the Chief Officer's knowledge. No berth schedule is worth that sentence."},
+    {t:"Report it accurately but hang the Second Officer alone: 'He falsified his record. I knew nothing. The discipline will be severe.'",v:2,f:"Accurate, and incomplete in the worst way: no root cause, no system response, just a sacrifice. The inspector sees a ship that punishes individuals for systemic pressure — and your officers see what honesty costs aboard."}]},
+  {p:"Closing meeting. The observation is recorded. The inspector adds, not unkindly: 'Your handling will be in my comments. What happens to the Second Officer is your business — but I have seen ships destroy good officers over this.'",
+   o:[
+    {t:"After he leaves, deal with both layers: the falsification goes through the formal process at proportionate level — and the port rotation that forced impossible coverage goes to the Master and office in writing, with your proposal for handover staffing. The Second Officer hears both: the record matters, and the ship owns its share.",v:3,f:"The complete resolution. Consequence for the act, repair for the cause, and an officer who learns that truth survives aboard this ship. The next discrepancy will be reported, not hidden — which is the entire point of every rest-hour rule."},
+    {t:"Let it go entirely — the vetting observation was punishment enough.",v:1,f:"The inspector's kindness was about proportion, not amnesty. Zero response teaches your officers that records are decorative under pressure — and the schedule that caused this remains, loaded, for the next port rush."},
+    {t:"Make the example maximal: formal warning at the highest level, duties restricted, the case briefed to all officers by name.",v:2,f:"The inspector warned you about exactly this. Maximum severity for a pressure-driven cover-up — while the pressure itself goes unaddressed — destroys one officer and teaches the rest only to hide better."}]}
+ ],
+ bands:[
+  {min:8,t:"Integrity under cross-check",b:"You refused to improvise, surfaced an uncomfortable truth, treated cause and act separately, and turned a falsification finding into evidence of a working safety culture. This is vetting performance at the level offices remember."},
+  {min:6,t:"Truth told, system untouched",b:"The honesty held, but either the root cause or the proportionate consequence slipped. Half-resolved record cases repeat — the same pressure will write the same fiction next quarter."},
+  {min:0,t:"The cover-up deepened",b:"Somewhere in this scenario you protected the schedule instead of the truth. Cross-checks exist because that choice is common — and career-ending. Records are the ship's testimony; never let them perjure."}
+ ]
+};
+
+const CRISIS_SIM2 = {
+ title:"Crisis Simulator: Mooring Injury, Forward Station",
+ intro:"Singling up in strong wind. A spring line surges off the drum and strikes an OS — he is down on deck, conscious, screaming, his lower leg visibly wrong. Five men freeze around him. Lines are still under load. You command the forward station.",
+ steps:[
+  {p:"Two men are already moving toward the casualty — through the bight zone of the loaded lines. The OS is screaming. The bridge does not know yet.",
+   o:[
+    {t:"'STOP — all hands hold position! Surge that spring off, make all lines fast and slack number two. THEN we reach him. Tan — bridge: crew injury forward, leg, conscious. Medical party and stop the operation.'",v:3,f:"The hardest right answer: secure the killing zone before the rescue. Two more casualties in the bight help nobody. Bridge informed in the same breath — they own the ship side of stopping safely."},
+    {t:"Run to the casualty yourself — he is screaming and seconds matter.",v:1,f:"The screaming says conscious with airway and circulation; the loaded lines say the danger is still live. The station commander entering the bight zone models exactly the impulse that creates double casualties — and beheads the station."},
+    {t:"'Everyone to him, lift him clear of the lines, quickly!'",v:2,f:"Moving a man with a major leg injury without assessment risks converting a fracture into a vascular catastrophe — and six men in the bight zone is six exposures. Secure, assess, then move properly."}]},
+  {p:"Lines secured. You reach him: deformed lower leg, heavy bleeding through the boiler suit, conscious but going grey. The medical party is three minutes away. The Bosun looks at you: 'Tourniquet, Mate?'",
+   o:[
+    {t:"'Direct pressure first — Bosun, your hands, here, hard. Cut the suit, let me see it. If pressure does not control it in one minute or we see spurting, tourniquet high and tight, and we note the time. Keep him talking — what is his daughter's name?'",v:3,f:"Textbook bleeding control ladder: direct pressure first, tourniquet on failure or arterial signs, time recorded. And the question to the casualty is real medicine — conscious, talking, distracted is exactly where you want him."},
+    {t:"'Tourniquet, immediately, maximum tight — we take no chances.'",v:2,f:"Defensible but premature: most extremity bleeds yield to direct pressure, and a tourniquet has its own costs. Going straight to it without trying pressure skips the ladder — workable, not optimal. If you do apply it: record the time."},
+    {t:"'Do not touch the leg — wait for the medical party, we might make it worse.'",v:1,f:"Bleeding does not wait three minutes. 'Do nothing' is the one wrong answer to hemorrhage — grey and fading is the casualty telling you the clock is running. Pressure now, hands on, exactly where the blood is."}]},
+  {p:"Bleeding controlled, casualty packaged, medical party has him. The Master radios: 'Telemedical is on standby, possible shore evacuation. And forward station — can you complete the unmooring? The pilot is asking.'",
+   o:[
+    {t:"'Station can complete with four hands — but request ten minutes first: I need to re-brief the team, re-walk the snap-back zones, and confirm every man is fit to continue. One of them held his shipmate's leg together two minutes ago.'",v:3,f:"The commander's full picture: operationally yes, humanly not yet. Shaken men around loaded lines is how the second accident happens. Ten minutes of reset is the cheapest insurance of the day — and the pilot will survive it."},
+    {t:"'Negative — station stands down completely. We are done for today.'",v:2,f:"Care for the team, but more than the situation requires — and it strands the ship mid-operation in strong wind, which carries its own risks. The middle path exists: reset, re-brief, continue deliberately."},
+    {t:"'Affirmative, completing now — back to stations, all of you, the pilot is waiting.'",v:1,f:"Five adrenaline-soaked men ordered straight back among loaded lines for a waiting pilot: this is the textbook setup for casualty number two. The schedule already broke once today; do not let it break a second man."}]}
+ ],
+ bands:[
+  {min:8,t:"Station commander under blood pressure",b:"You secured the danger before the rescue, ran the bleeding ladder correctly, kept the bridge in the loop, and protected a shaken team from the second accident. This is mooring emergency command done whole."},
+  {min:6,t:"Casualty saved, margins spent",b:"The man survived your choices, but you skipped a rung — the danger zone, the pressure-first ladder, or the team reset. The skipped rung is where the second casualty lives."},
+  {min:0,t:"Instinct beat sequence",b:"You ran toward the screaming — everyone wants to. Sequence is the discipline: secure the zone, control the bleed, inform the bridge, reset the team. Re-run it slower; speed comes after order."}
+ ]
+};
+
+const SIM_SETS = {
+ convo:{ title:"Difficult Conversations", scenarios:[CONVO_SIM, CONVO_SIM2, CONVO_SIM3] },
+ nego:{ title:"Negotiation", scenarios:[NEGO_SIM, NEGO_SIM2] },
+ psc:{ title:"Inspections", scenarios:[PSC_SIM, PSC_SIM2] },
+ crisis:{ title:"Crisis Command", scenarios:[CRISIS_SIM, CRISIS_SIM2] }
+};
+
+/* ============ 30-DAY COMMAND COURSE ============ */
+const COURSE = [
+ {t:"Presence", tasks:[{k:"module",id:"command-presence",l:"Module I — Command Presence"},{k:"scen",i:0,l:"Scenario: Bosun refuses your instruction"}]},
+ {t:"Authority", tasks:[{k:"module",id:"authority-vs-fear",l:"Module II — Authority vs Fear"},{k:"scen",i:1,l:"Scenario: Third Officer questions your cargo plan"},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Respect", tasks:[{k:"module",id:"psych-respect",l:"Module III — The Psychology of Respect"},{k:"scen",i:2,l:"Scenario: AB appeals past you to the Master"}]},
+ {t:"Sources of Power", tasks:[{k:"read",view:"power",l:"Read: all six sources of power",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Motivation", tasks:[{k:"module",id:"crew-motivation",l:"Module IV — Crew Motivation"},{k:"tool",id:"crew",l:"Start your Crew Motivation Tracker — add 3 men",m:1}]},
+ {t:"Influence", tasks:[{k:"module",id:"influence-without-orders",l:"Module V — Influencing Without Orders"},{k:"scen",i:6,l:"Scenario: Foreman demands a dangerous loading change"}]},
+ {t:"First Review", tasks:[{k:"review",l:"Clear your review deck"},{k:"tool",id:"team",l:"Run the Crew Climate Check"}]},
+ {t:"Human Nature", tasks:[{k:"module",id:"human-nature",l:"Module VI — Human Nature & Behavior"},{k:"tool",id:"pers",l:"Run the Personality Analyzer on one crew member"}]},
+ {t:"Conflict Basics", tasks:[{k:"module",id:"conflict-resolution",l:"Module VII — Conflict Resolution"},{k:"read",view:"conflict",l:"Read: the frameworks and the 7 scripts",m:1}]},
+ {t:"Crew Conflict", tasks:[{k:"scen",i:3,l:"Scenario: Two national groups in tension"},{k:"scen",i:4,l:"Scenario: Bosun and Pumpman stop speaking"}]},
+ {t:"Difficult People", tasks:[{k:"module",id:"difficult-crew",l:"Module VIII — Managing Difficult Personalities"},{k:"sim",key:"convo",i:0,l:"Simulator: The Bosun and the PPE habit"}]},
+ {t:"Performance", tasks:[{k:"module",id:"lazy-crew",l:"Module IX — Underperformance & Laziness"},{k:"scen",i:18,l:"Scenario: Your best AB collapses mid-contract"}]},
+ {t:"Toxicity", tasks:[{k:"module",id:"toxic-crew",l:"Module X — Handling Toxic Crew Members"},{k:"scen",i:5,l:"Scenario: The bullied cadet who says he is fine"}]},
+ {t:"Hard Conversations", tasks:[{k:"review",l:"Clear your review deck"},{k:"sim",key:"convo",i:1,l:"Simulator: Alcohol on duty"}]},
+ {t:"Negotiation", tasks:[{k:"module",id:"negotiation",l:"Module XI — Negotiation Skills"},{k:"sim",key:"nego",i:0,l:"Simulator: The terminal ballast push"}]},
+ {t:"Commercial Pressure", tasks:[{k:"scen",i:12,l:"Scenario: Charterer pushes you into heavy weather"},{k:"scen",i:13,l:"Scenario: Agent wants clean receipts for short cargo"}]},
+ {t:"The Laws I", tasks:[{k:"read",view:"laws",l:"Read: Laws 1–16",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Inspections", tasks:[{k:"module",id:"inspection-leadership",l:"Module XII — Inspection & Audit Leadership"},{k:"sim",key:"psc",i:0,l:"Simulator: The hostile PSC officer"}]},
+ {t:"Inspection Scenarios", tasks:[{k:"scen",i:9,l:"Scenario: PSC officer threatens detention"},{k:"scen",i:10,l:"Scenario: Your AB fails the inspector's question"}]},
+ {t:"Records & Integrity", tasks:[{k:"sim",key:"psc",i:1,l:"Simulator: The vetting rest-hour cross-check"},{k:"scen",i:11,l:"Scenario: Master wants records backdated"}]},
+ {t:"The Laws II", tasks:[{k:"review",l:"Clear your review deck"},{k:"read",view:"laws",l:"Read: Laws 17–32",m:1}]},
+ {t:"Crisis Command", tasks:[{k:"module",id:"crisis-leadership",l:"Module XIII — Crisis Leadership"},{k:"sim",key:"crisis",i:0,l:"Simulator: Smoke in the paint locker"}]},
+ {t:"Decisions", tasks:[{k:"module",id:"emergency-decisions",l:"Module XIV — Decision-Making Under Pressure"},{k:"scen",i:26,l:"Scenario: Blackout in a narrow channel"}]},
+ {t:"Emergency Drills", tasks:[{k:"sim",key:"crisis",i:1,l:"Simulator: Mooring injury forward"},{k:"scen",i:25,l:"Scenario: Man overboard at stations"}]},
+ {t:"Culture", tasks:[{k:"module",id:"multicultural",l:"Module XV — Multicultural Crew Management"},{k:"scen",i:24,l:"Scenario: Fire party freezes"}]},
+ {t:"Emotional Command", tasks:[{k:"module",id:"eq",l:"Module XVI — Emotional Intelligence at Sea"},{k:"scen",i:28,l:"Scenario: Devastating news from home"}]},
+ {t:"Ship Politics", tasks:[{k:"module",id:"political-dynamics",l:"Module XVII — Political Dynamics Onboard"},{k:"scen",i:34,l:"Scenario: You disagree with the Master's anchorage"}]},
+ {t:"Communication", tasks:[{k:"module",id:"communication",l:"Module XVIII — Communication Mastery"},{k:"read",view:"phrases",l:"Read: the Leadership Phrasebook",m:1}]},
+ {t:"Persuasion & The Laws III", tasks:[{k:"module",id:"persuasion",l:"Module XIX — Persuasion Techniques"},{k:"read",view:"laws",l:"Read: Laws 33–48",m:1}]},
+ {t:"Graduation", tasks:[{k:"module",id:"high-performance-teams",l:"Module XX — High-Performance Teams"},{k:"tool",id:"assess",l:"Take the Leadership Assessment"},{k:"sim",key:"nego",i:1,l:"Simulator: The drydock budget cut"}]}
+];
+
+/* ============ CASE FILES ============ */
+const CASES = [
+ {id:"elfaro", ship:"SS El Faro", year:2015, t:"The Storm Nobody Could Question",
+  what:"The American cargo ship El Faro sailed from Jacksonville toward Puerto Rico as Hurricane Joaquin formed. The Master chose a route close to the forecast storm track, trusting old weather data and his own judgment. Through the night, junior officers on the bridge saw newer forecasts and grew worried. The voyage data recorder captured their voices: hints, careful suggestions, polite questions — but never a direct, firm challenge. The Master stayed on his route. The ship lost propulsion in the hurricane, flooded, and sank. All 33 aboard died.",
+  command:"This was not a weather failure first — it was a speaking-up failure. The officers had the information and the doubts. What they did not have was a bridge culture where a Third Mate could say plainly: 'Captain, this route will kill us — here is the new forecast.' Every hint was deflected, and hints were all they offered. The Master, for his part, had built no system that invited challenge, and fatigue plus commercial schedule pressure filled the silence.",
+  lessons:["Doubt that stays polite and vague protects nobody. Train your officers to challenge with structure: facts, recommendation, request for decision.","If you are the senior: the absence of challenge does not mean you are right. It may mean your bridge is afraid.","Old data feels comfortable because it agreed with the plan. Always ask: what does the NEWEST information say?","Schedule pressure is loudest exactly when the weather argument matters most. Write your reasoning down in those moments."]},
+ {id:"herald", ship:"MS Herald of Free Enterprise", year:1987, t:"The Open Door and the Sleeping Assumption",
+  what:"The ro-ro ferry Herald of Free Enterprise left Zeebrugge with her bow doors open. The assistant bosun, responsible for closing them, was asleep in his cabin. The Chief Officer, required to confirm closure, assumed it was done — the working culture was 'no report means all is well.' Minutes after departure, water flooded the vehicle deck. The ship capsized in about 90 seconds. 193 people died.",
+  command:"The famous inquiry phrase was 'a disease of sloppiness' running from top to bottom. The fatal mechanism was negative reporting: silence treated as confirmation. Nobody was assigned to positively report 'doors closed' — and requests from Masters for door indicator lights on the bridge had been mocked by shore management as unnecessary expense. Every layer assumed another layer had it covered.",
+  lessons:["Silence is not confirmation. Critical states must be positively reported and acknowledged — closed-loop, every time.","If a check matters, one named person owns it and one named person verifies it. 'Someone' closes no doors.","When the crew asks for a safety improvement and management laughs, that laughter is itself a finding. Document such requests.","Culture sinks ships faster than weather. The deadliest sentence aboard is: we have always done it this way."]},
+ {id:"concordia", ship:"Costa Concordia", year:2012, t:"The Showman and the Silent Bridge",
+  what:"The cruise ship Costa Concordia, with over 4,200 people aboard, deviated from her planned route to perform a 'salute' — a close, showy pass of Giglio Island. The Master conned the ship personally, navigating by eye at night, while the bridge team watched without challenge. The ship struck rocks, tore open, and drifted aground. The evacuation was delayed and chaotic; the Master left the ship while passengers were still aboard. 32 people died.",
+  command:"Two command failures stacked. First: a deviation from the plan for prestige, accepted by an entire bridge team that had been trained into silence around a dominant captain. Officers later admitted they saw the danger building and said nothing usable. Second: when crisis came, the command structure that had suppressed its officers could not suddenly produce initiative — the delay in sounding the alarm and ordering abandonment cost lives that the grounding itself had spared.",
+  lessons:["A bridge team that cannot challenge in calm waters will not challenge in danger. The silence is installed long before the rocks.","Deviations from the plan for non-operational reasons — prestige, salutes, shortcuts — deserve the strongest challenge, because no professional logic protects them.","The leader who suppresses initiative inherits a crew with none, on the exact night he needs it most.","Command in crisis is a duty to stay, decide, and direct. Authority and accountability cannot be abandoned together."]},
+ {id:"bowmariner", ship:"MT Bow Mariner", year:2004, t:"The Order Nobody Understood — and Nobody Questioned",
+  what:"The chemical tanker Bow Mariner exploded off Virginia while the crew, on the Master's order, was cleaning and ventilating cargo tanks that had carried MTBE — opening many tank openings at once, against the most basic rules of tanker safety. Flammable vapor found an ignition source. The ship sank in under 90 minutes; 21 of 27 crew died, including the Master.",
+  command:"The investigation found a ship with a rigid, fear-based hierarchy: senior officers of one nationality, junior officers and crew of another, with the juniors trained never to question. The order to open the tanks was contrary to training that every officer aboard had received — yet it was executed without one recorded objection. Fear of the Master outweighed fear of the vapor. The safety management system existed on paper and nowhere else.",
+  lessons:["An unsafe order obeyed kills the obeyers too. Crews must know — from your daily behavior — that questioning an unsafe order is duty, not disrespect.","Hierarchies split along nationality lines are double hierarchies: rank plus tribe. They suppress challenge twice as hard. Watch for this on your own ship.","If the SMS lives only in the files, the real procedures are whatever the most feared man says. Audit the gap between paper and deck.","The Master who builds fear builds his own echo chamber — and sails inside it."]},
+ {id:"sewol", ship:"MV Sewol", year:2014, t:"Abandon Ship — Except the Order Never Came",
+  what:"The South Korean ferry Sewol, overloaded and with cargo poorly secured after repeated improper modifications, capsized during a turn. As the ship heeled and slowly rolled over more than an hour, passengers — mostly schoolchildren — were repeatedly told over the PA to stay in their cabins and wait. The order to evacuate was never effectively given. The Master and several crew were among the first rescued. 304 people died, most of them obeying the instruction to stay put.",
+  command:"This is the catastrophic version of decision paralysis: a command team that, facing a decision too big to face, defaulted to the instruction that required nothing of them — wait. The deeper roots were commercial: chronic overloading, ballast removed to carry more cargo, lashings everyone knew were inadequate. Each daily compromise had been survivable; the turn that day asked for the margin that had been sold off piece by piece.",
+  lessons:["In a developing disaster, 'wait' is also a decision — usually the worst one. Leaders must decide with the information they have, on the clock the ship sets.","Margins are sold in small, profitable, survivable slices. Your job is to know the total already sold before the day that asks for it.","Evacuation decisions delayed for certainty arrive after the stairways tilt. Drill the early call.","People obey official voices even unto death. That is the weight every PA announcement and every order of yours actually carries."]}
+];
+
+/* ============ MODULE COMPLETION QUIZZES ============ */
+const QUIZZES = {
+ "command-presence":[
+  {q:"A crisis starts. What is your very first job?",o:["Shout clear orders so urgency is felt","Control your own body: breathing, voice, posture","Run to the scene faster than anyone","Call the office immediately"],a:1},
+  {q:"Where does real command presence mostly come from?",o:["Natural charisma you are born with","A loud, confident voice","Preparation — knowing the job cold before the moment","Strict distance from the crew"],a:2},
+  {q:"You are asked something you do not know. The strong answer is:",o:["Give your best guess with confidence","Change the subject","Say you will check, and come back fast with the exact answer","Refer them to someone else and move on"],a:2}],
+ "authority-vs-fear":[
+  {q:"What is the long-term price of leading by fear?",o:["Slower work","People stop telling you the truth","Higher costs","More paperwork"],a:1},
+  {q:"Respect is built from which three things?",o:["Rank, age, and experience","Fairness, competence, and consistency","Strictness, distance, and discipline","Friendship, humor, and favors"],a:1},
+  {q:"Before giving an order, the key question is:",o:["Will the crew like it?","Is it written in the SMS?","Am I ready to enforce and follow up on it?","Has the Master approved it?"],a:2}],
+ "psych-respect":[
+  {q:"What is the first thing a crew quietly tests in a new officer?",o:["His friendliness","His competence at the job","His nationality","His connections in the office"],a:1},
+  {q:"'Courage upward' means:",o:["Reporting crew mistakes to the Master","Defending the crew and telling superiors uncomfortable truths politely","Asking the office for promotion","Never disagreeing with anyone senior"],a:1},
+  {q:"Respect aboard is built mostly from:",o:["Big speeches at the right moments","One heroic act","Many small kept promises","Certificates and qualifications"],a:2}],
+ "crew-motivation":[
+  {q:"What does salary actually decide?",o:["How hard a man works each day","Why he came — not his daily effort","His loyalty to the officers","His safety behavior"],a:1},
+  {q:"Which praise actually works?",o:["'Good job, everyone' at the meeting","A bonus recommendation","Naming exactly what was done well and why it mattered","Praising only the best man aboard"],a:2},
+  {q:"For fairness to motivate, it must be:",o:["Strict","Visible — the crew can see and check the system","Flexible for good workers","Decided privately by the officer"],a:1}],
+ "influence-without-orders":[
+  {q:"Reciprocity means:",o:["Punishing those who refuse you","Helping first, so goodwill exists before you need it","Trading favors openly like a market","Only helping those who helped you"],a:1},
+  {q:"The best way to get someone to drive a plan hard is:",o:["Order it twice","Explain it in great detail","Lead him with questions until the plan becomes his idea","Promise overtime"],a:2},
+  {q:"To spread a new standard fastest, win first:",o:["The youngest crew, who adapt quickest","The few respected men others copy","The Master","Everyone equally at one meeting"],a:1}],
+ "human-nature":[
+  {q:"When corrected, what does every man protect first?",o:["His salary","His self-image and story about himself","His friends","His schedule"],a:1},
+  {q:"Envy usually appears disguised as:",o:["Open jealousy","Criticism, jokes, or sudden coldness after your success","Hard work","Silence"],a:1},
+  {q:"A man's true character shows most clearly:",o:["At the interview","During calm routine days","Under pressure — emergencies, inspections, failures","In his paperwork"],a:2}],
+ "conflict-resolution":[
+  {q:"The cheapest moment to solve a conflict is:",o:["After both sides cool down for a week","At the grumble stage, before it grows","When it affects the work","When the Master notices"],a:1},
+  {q:"A 'position' versus an 'interest':",o:["They are the same thing","Position is what he demands; interest is why he demands it","Position is official, interest is personal","Interest is about money only"],a:1},
+  {q:"Before bringing two men in conflict together, you should:",o:["Decide who is guilty","Hear each one separately first","Warn them both formally","Wait for a written complaint"],a:1}],
+ "difficult-crew":[
+  {q:"The sea-lawyer argues loudest when:",o:["He is alone with you","He has an audience","He is tired","The Master is nearby"],a:1},
+  {q:"The cure for the silent resister is:",o:["More patience","Heavier punishment","Specific tasks, deadlines, and his spoken confirmation","Ignoring him"],a:2},
+  {q:"The talented 'prima donna' is paid best in:",o:["Money and overtime","Exemptions from small rules","Recognition and interesting work — with the same rules as everyone","Public criticism to keep him humble"],a:2}],
+ "lazy-crew":[
+  {q:"Before calling a man lazy, check first:",o:["His contract history","Whether your own order was clear and specific","His nationality and age","His friends aboard"],a:1},
+  {q:"'Cannot' and 'will not' need:",o:["The same response","Opposite cures: training versus consequences","Both a warning","The Master's decision"],a:1},
+  {q:"Tolerating one underperformer mainly punishes:",o:["The office","The underperformer himself","Your best men, who carry his share","Nobody, if the work gets done"],a:2}],
+ "toxic-crew":[
+  {q:"The signature of a toxic crew member is:",o:["Open aggression","Triangulation — carrying twisted words between people","Laziness","Drinking"],a:1},
+  {q:"Toxic men are starved by:",o:["Extra work","Isolation in the cabin","Delivering important information yourself, fast and complete","Public confrontation"],a:2},
+  {q:"When containment fails, the correct path is:",o:["Endure until crew change","Documentation, Master, DPA, and repatriation through the system","Quiet pressure until he resigns","Letting the crew handle him"],a:1}],
+ "negotiation":[
+  {q:"In negotiation, visible desperation:",o:["Creates sympathy","Makes you accept worse terms","Speeds the deal helpfully","Has no real effect"],a:1},
+  {q:"'It sounds like the schedule has put you under pressure' is an example of:",o:["Agreeing with the other side","Weakness","Labeling — making him feel heard without conceding","Stalling"],a:2},
+  {q:"The most profitable word in negotiation is:",o:["No","If — attaching a condition to every concession","Final","Please"],a:1}],
+ "inspection-leadership":[
+  {q:"The inspection really starts:",o:["When certificates are opened","At the gangway — ID check, log, escort, first minutes","At the opening meeting","In the engine room"],a:1},
+  {q:"Before an inspection, the crew most needs:",o:["Fresh paint","New coveralls","Practice answering questions about their own duties","A day off"],a:2},
+  {q:"In the closing meeting, you argue with:",o:["Emotion and persistence","Documents and evidence, politely","Threats of appeal","The agent's help"],a:1}],
+ "crisis-leadership":[
+  {q:"In an emergency, the first thing to command is:",o:["The fire party","The bridge","Yourself — breathing, voice, pace","The engine room"],a:2},
+  {q:"The priority order that never changes:",o:["Ship, cargo, people, schedule","People, ship, cargo, schedule","Schedule, people, ship, cargo","Cargo, ship, schedule, people"],a:1},
+  {q:"'Closed-loop' communication means:",o:["Private radio channels","Orders confirmed back in the receiver's own words","Short messages only","Written orders"],a:1}],
+ "emergency-decisions":[
+  {q:"The defense against confirmation bias is to:",o:["Decide faster","Actively hunt for evidence that you are wrong","Trust your experience","Ask the office"],a:1},
+  {q:"The fresh-start test asks:",o:["What did this cost so far?","If I were starting right now, would I choose this course?","What would the Master do?","How much time have we invested?"],a:1},
+  {q:"The urge to skip the checklist when tired is:",o:["A sign of experience","Efficiency","A fatigue warning light — run the list anyway","Acceptable on familiar jobs"],a:2}],
+ "multicultural":[
+  {q:"On anything important, a bare 'yes sir' should be:",o:["Trusted — yes means yes","Verified by asking him to explain the plan in his own words","Written down","Reported"],a:1},
+  {q:"Public correction in face-cultures:",o:["Works faster","Is remembered as a serious injury for years","Is expected and accepted","Builds toughness"],a:1},
+  {q:"To get input from men whose culture waits to be asked:",o:["Wait longer in silence","Send a form","Invite it personally, by name, and prove honesty is safe","Ask their countryman to collect opinions"],a:2}],
+ "eq":[
+  {q:"Knowing your personal triggers lets you:",o:["Avoid all conflict","Catch the hot reaction mid-flight and choose a better one","Hide your emotions completely","Blame fatigue"],a:1},
+  {q:"'The gap' refers to:",o:["The space between ship and quay","The pause between a provocation and your response","Rest hour shortfalls","Generation differences"],a:1},
+  {q:"Your visible mood on deck acts as:",o:["Private business","An order you did not mean to give — crew adjust to it","Motivation","Nothing important"],a:1}],
+ "political-dynamics":[
+  {q:"The 'real chart' of a ship shows:",o:["The official ranks","Who has influence beyond their rank","The office hierarchy","Seniority dates"],a:1},
+  {q:"Correcting the Master is done:",o:["At the meeting, so everyone learns","In private, framed as protecting him","By email with the office copied","Never"],a:1},
+  {q:"In a feud between two camps, the strongest position is:",o:["Join the stronger side early","Join the side that is right","Warm neutrality — access to all, messenger for none","Report both to the office"],a:2}],
+ "communication":[
+  {q:"The real meaning of your message is:",o:["What you said","What you meant","What the receiver understood and did next","What is in the log"],a:2},
+  {q:"Tired and foreign listeners are best served by:",o:["Louder delivery","Fixed structure, same order every time","Longer explanations","Written memos only"],a:1},
+  {q:"Instead of 'All clear?', ask:",o:["'Any questions?'","'Are you sure?'","'Walk me through your first three steps.'","'Everyone happy?'"],a:2}],
+ "persuasion":[
+  {q:"Commitment becomes powerful when the man:",o:["Nods in the meeting","States the plan publicly in his own words","Signs the attendance sheet","Is ordered twice"],a:1},
+  {q:"New standards spread fastest:",o:["Downward by memo","Sideways, peer to peer, from respected men","From the office","Through warnings"],a:1},
+  {q:"Loss framing works because:",o:["People fear officers","Losses feel about twice as heavy as equal gains","It sounds dramatic","It shortens meetings"],a:1}],
+ "high-performance-teams":[
+  {q:"Psychological safety is built mainly by:",o:["Team dinners","Your reaction to the first bad news and dumb question","Posters and slogans","Avoiding all discipline"],a:1},
+  {q:"The real standard aboard is:",o:["What is written in the SMS","The worst thing leadership walks past without comment","What the office audits","The Master's standing orders"],a:1},
+  {q:"'Train the next man down' creates:",o:["Threats to your position","A crew one promotion deep — crises become inconveniences","Confusion about authority","Extra paperwork"],a:1}]
+};
+
 /* ============ BADGES ============ */
 const BADGES = [
  {id:'first-watch', t:'First Watch', d:'Complete your first module', ic:'⚓', test:s=>s.doneModules.length>=1},
@@ -1935,7 +2460,12 @@ const BADGES = [
  {id:'challenger', t:'Daily Drill', d:'Complete 7 daily challenges', ic:'🔥', test:s=>s.doneChallenges.length>=7},
  {id:'streak7', t:'Seven-Day Watchkeeper', d:'Visit 7 days in a row', ic:'🌅', test:s=>s.streak>=7},
  {id:'quotable', t:'Quotable', d:'Browse 30 quotes', ic:'✒️', test:s=>s.quotesSeen>=30},
- {id:'master-mariner', t:'Master Mariner', d:'Reach 1600 XP', ic:'👑', test:s=>s.xp>=1600}
+ {id:'master-mariner', t:'Master Mariner', d:'Reach 1600 XP', ic:'👑', test:s=>s.xp>=1600},
+ {id:'inspector-proof', t:'Inspector-Proof', d:'Complete the PSC inspection simulator', ic:'🛡️', test:s=>s.simsDone.includes('psc')},
+ {id:'firefighter', t:'On-Scene Commander', d:'Complete the crisis simulator', ic:'🚒', test:s=>s.simsDone.includes('crisis')},
+ {id:'toolmaster', t:'Toolmaster', d:'Complete every interactive tool', ic:'🧰', test:s=>!!s.assessDone && ['pers','convo','nego','psc','crisis','team'].every(k=>s.simsDone.includes(k))},
+ {id:'historian', t:'Historian', d:'Study all five case files', ic:'📜', test:s=>s.doneCases.length>=CASES.length},
+ {id:'graduate', t:'Course Graduate', d:'Complete the 30-Day Command Course', ic:'🎓', test:s=>s.courseDays.length>=COURSE.length}
 ];
 function checkBadges(){
   let won=[];
@@ -1949,6 +2479,7 @@ function checkBadges(){
 /* ---------- theme ---------- */
 function applyTheme(){
   document.documentElement.dataset.theme = S.theme === 'day' ? 'day' : '';
+  document.documentElement.dataset.fs = S.fontSize === 'std' ? '' : S.fontSize;
   const i = document.getElementById('thIcon');
   if (i) i.innerHTML = S.theme === 'day'
     ? '<path d="M20.5 14.5A8.5 8.5 0 0 1 9.5 3.5a8.5 8.5 0 1 0 11 11Z" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linejoin="round"/>'
@@ -2204,6 +2735,8 @@ VIEWS.dash = () => {
 
   ${voyageHTML()}
 
+  ${courseCardHTML()}
+
   ${reviewCardHTML()}
 
   <div class="section-head"><h2>Today’s Watch</h2><span class="chip gold mono">Day ${dayIndex(9999)+1}</span></div>
@@ -2230,7 +2763,7 @@ VIEWS.dash = () => {
     <button class="btn ${chDone?'ghost':'primary'}" id="chBtn" ${chDone?'disabled':''}>${chDone?'Completed today ✓':'Mark completed'}</button>
   </div>
 
-  <div class="section-head"><h2>Commendations</h2><span class="muted small">${S.badges.length}/${BADGES.length} earned</span></div>
+  <div class="section-head"><h2>Commendations</h2><button class="chip" onclick="show('stats')">📊 Full stats</button></div>
   <div class="badgegrid">
     ${BADGES.map(b=>`<div class="badge${S.badges.includes(b.id)?' won':''}" title="${b.d}"><div class="bicon">${b.ic}</div><b>${b.t}</b><span>${b.d}</span></div>`).join('')}
   </div>`;
@@ -2290,12 +2823,70 @@ VIEWS.module = id => {
   <div class="section-head"><h2 style="font-size:1.1rem">Applying it onboard</h2></div>
   <div class="card"><ul class="clean">${m.onboard.map(o=>`<li>${o}</li>`).join('')}</ul></div>
   <div class="callout gold" style="margin-top:14px"><div class="ctitle">Key takeaway</div>${m.takeaway}</div>
-  <div style="margin-top:18px"><button class="btn ${done?'ghost':'primary'}" id="modBtn" ${done?'disabled':''}>${done?'Module complete ✓':'Mark module complete  +30 XP'}</button></div>`;
+  <div class="card" style="margin-top:14px">
+    <div class="eyebrow">My Notes</div>
+    <p class="muted small" style="margin:6px 0 10px">Your private notes for this page — how it applies on YOUR ship. Saved on this device and included in backups.</p>
+    <textarea class="notebox" id="noteBox" placeholder="Write your own version of this lesson...">${esc(S.notes['m:'+m.id]||'')}</textarea>
+    <div style="margin-top:10px"><button class="btn ghost" id="noteSave">Save note</button></div>
+  </div>
+  ${done ? '<div style="margin-top:18px"><button class="btn ghost" disabled>Module complete ✓</button></div>' : `
+  <div class="card" style="margin-top:18px" id="quizCard">
+    <div class="eyebrow">Completion quiz</div>
+    <p class="muted small" style="margin:8px 0 12px">Answer at least 2 of 3 correctly to complete the module and earn 30 XP.</p>
+    ${(QUIZZES[m.id]||[]).map((qz,qi)=>`<div style="margin-bottom:14px">
+      <p style="font-size:.92rem;margin-bottom:8px"><b class="mono" style="color:var(--brass)">${qi+1}</b>&nbsp; ${qz.q}</p>
+      ${qz.o.map((op,oi)=>`<div class="opt" data-qz="${qi}" data-o="${oi}">${op}</div>`).join('')}
+    </div>`).join('')}
+    <button class="btn primary" id="quizBtn">Submit answers</button>
+    <div id="quizResult"></div>
+  </div>`}`;
 };
+function bindNote(key){
+  const b = document.getElementById('noteSave');
+  if (!b) return;
+  b.onclick = () => {
+    const v = document.getElementById('noteBox').value.trim();
+    if (v) S.notes[key] = v; else delete S.notes[key];
+    save(); toast('Note saved');
+  };
+}
 BIND.module = id => {
-  const btn = document.getElementById('modBtn');
-  if (btn) btn.onclick = () => {
-    if (!S.doneModules.includes(id)) { S.doneModules.push(id); S.moduleDates[id] = TODAY; save(); addXP(30, MODULES.find(x=>x.id===id).title + ' complete'); show('module', id); }
+  bindNote('m:'+id);
+  if (S.doneModules.includes(id)) return;
+  const qa = new Array((QUIZZES[id]||[]).length).fill(-1);
+  document.querySelectorAll('.opt[data-qz]').forEach(el => el.onclick = () => {
+    if (el.dataset.locked) return;
+    const qi = +el.dataset.qz;
+    qa[qi] = +el.dataset.o;
+    document.querySelectorAll(`.opt[data-qz="${qi}"]`).forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+  });
+  document.getElementById('quizBtn').onclick = () => {
+    const qs = QUIZZES[id]||[];
+    if (qa.includes(-1)) { toast('Answer all ' + qs.length + ' questions'); return; }
+    let right = 0;
+    qs.forEach((qz,qi) => {
+      const correct = qa[qi]===qz.a;
+      if (correct) right++;
+      document.querySelectorAll(`.opt[data-qz="${qi}"]`).forEach(x=>{
+        x.dataset.locked='1'; x.style.cursor='default';
+        const oi = +x.dataset.o;
+        if (oi===qz.a) x.classList.add('good');
+        else if (oi===qa[qi]) x.classList.add('bad');
+      });
+    });
+    const res = document.getElementById('quizResult');
+    if (right >= 2) {
+      S.doneModules.push(id); S.moduleDates[id] = TODAY; save();
+      addXP(30, MODULES.find(x=>x.id===id).title + ' complete');
+      res.innerHTML = `<div class="callout best" style="margin-top:12px"><div class="ctitle">Passed · ${right}/${qs.length}</div>Module complete. These principles now enter your review deck.</div>`;
+      document.getElementById('quizBtn').style.display='none';
+      setTimeout(()=>show('module', id), 1600);
+    } else {
+      res.innerHTML = `<div class="callout worst" style="margin-top:12px"><div class="ctitle">${right}/${qs.length} — not yet</div>Correct answers are marked green. Review the principles above and try again.</div>`;
+      document.getElementById('quizBtn').textContent = 'Try again';
+      document.getElementById('quizBtn').onclick = () => show('module', id);
+    }
   };
 };
 
@@ -2306,6 +2897,12 @@ VIEWS.scen = () => {
   return `
   <div class="section-head"><h2>Maritime Scenarios</h2>${S.doneScenarios.length>=SCENARIOS.length?'<span class="laurel">&#10070; All seas sailed</span>':`<span class="muted small">${S.doneScenarios.length}/${SCENARIOS.length} worked</span>`}</div>
   <p class="muted" style="margin-bottom:14px">Real situations from real decks. Read the situation, decide what you would do — then study the best response, the worst, and the psychology underneath.</p>
+  <div class="card gold" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div><div class="eyebrow">Case Files</div><p class="muted small" style="margin-top:4px">${CASES.length} real casualties read through the command lens — El Faro, Herald, Concordia and more.</p></div>
+      <button class="btn ghost" onclick="show('cases')">Open files</button>
+    </div>
+  </div>
   <div class="chiprow" style="margin-bottom:16px">
     <button class="chip ${scenFilter<0?'on':''}" onclick="scenFilter=-1;show('scen')">All</button>
     ${SCEN_CATS.map((c,i)=>`<button class="chip ${scenFilter===i?'on':''}" onclick="scenFilter=${i};show('scen')">${c}</button>`).join('')}
@@ -2343,6 +2940,13 @@ VIEWS.scenario = i => {
       <p class="muted small" style="margin-top:8px">Honest grading is the whole exercise — the XP difference is small on purpose.</p>
     </div>`}
   </div>
+
+  <div class="card" style="margin-top:14px">
+    <div class="eyebrow">My Notes</div>
+    <p class="muted small" style="margin:6px 0 10px">Your private notes for this page — how it applies on YOUR ship. Saved on this device and included in backups.</p>
+    <textarea class="notebox" id="noteBox" placeholder="Write your own version of this lesson...">${esc(S.notes['s:'+i]||'')}</textarea>
+    <div style="margin-top:10px"><button class="btn ghost" id="noteSave">Save note</button></div>
+  </div>
   ${done?'':`<div class="card" id="commitBox" style="margin-top:16px">
     <div class="eyebrow">Commit before you look</div>
     <p class="muted small" style="margin:8px 0 12px">Decide your exact response — what you would say and do — as if the analysis did not exist. Then reveal and grade yourself honestly.</p>
@@ -2350,6 +2954,7 @@ VIEWS.scenario = i => {
   </div>`}`;
 };
 BIND.scenario = i => {
+  bindNote('s:'+i);
   const rv = document.getElementById('scenReveal');
   if (rv) rv.onclick = () => {
     document.getElementById('commitBox').style.display='none';
@@ -2402,46 +3007,61 @@ VIEWS.conflict = () => `
   ${CONFLICT.docu.map(d=>`<div class="principle"><b>${d.t}</b><p>${d.b}</p></div>`).join('')}`;
 
 /* ---------- QUOTES ---------- */
-let qFilter = -1;
+let qFilter = -1; /* -2 = saved */
+window.favQ = (idx, ev) => {
+  ev.stopPropagation();
+  const p = S.favQuotes.indexOf(idx);
+  if (p>=0) S.favQuotes.splice(p,1); else S.favQuotes.push(idx);
+  save(); show('quotes');
+};
 VIEWS.quotes = () => {
-  const list = QUOTES.filter(q => qFilter<0 || q.c===qFilter);
+  const list = QUOTES.filter((q,qi) => qFilter===-2 ? S.favQuotes.includes(qi) : (qFilter<0 || q.c===qFilter));
   S.quotesSeen = Math.max(S.quotesSeen, Math.min(QUOTES.length, S.quotesSeen + Math.min(list.length, 12))); save(); checkBadges();
   return `
   <div class="section-head"><h2>Command Quote Database</h2></div>
   <div class="chiprow" style="margin-bottom:16px">
-    <button class="chip ${qFilter<0?'on':''}" onclick="qFilter=-1;show('quotes')">All</button>
+    <button class="chip ${qFilter===-1?'on':''}" onclick="qFilter=-1;show('quotes')">All</button>
+    <button class="chip ${qFilter===-2?'on':''}" onclick="qFilter=-2;show('quotes')">★ Saved${S.favQuotes.length?' ('+S.favQuotes.length+')':''}</button>
     ${QCATS.map((c,i)=>`<button class="chip ${qFilter===i?'on':''}" onclick="qFilter=${i};show('quotes')">${c}</button>`).join('')}
   </div>
-  ${list.map(q=>`<div class="quote" style="margin-bottom:10px;--qa:${QCOLORS[q.c]}"><p>${q.q}</p><div class="qmean"><span>Meaning</span>${QMEANS[QUOTES.indexOf(q)]||''}</div><footer><cite>${q.a}</cite><span class="chip">${QCATS[q.c]}</span></footer></div>`).join('')}`;
+  ${list.length ? list.map(q=>{const qi=QUOTES.indexOf(q);return `<div class="quote" style="margin-bottom:10px;--qa:${QCOLORS[q.c]}"><button class="starbtn ${S.favQuotes.includes(qi)?'on':''}" onclick="favQ(${qi},event)" aria-label="Save quote">${S.favQuotes.includes(qi)?'★':'☆'}</button><p>${q.q}</p><div class="qmean"><span>Meaning</span>${QMEANS[qi]||''}</div><footer><cite>${q.a}</cite><span class="chip">${QCATS[q.c]}</span></footer></div>`;}).join('') : '<p class="muted">No saved quotes yet — tap the star on any quote to collect it here.</p>'}`;
 };
 
 /* ---------- TOOLS HUB ---------- */
 VIEWS.tools = () => `
   <div class="section-head"><h2>Interactive Tools</h2></div>
   <p class="muted" style="margin-bottom:14px">Train the judgment, not just the knowledge.</p>
-  <div class="grid">
-    <div class="row" onclick="show('assess')"><div class="ic">🪞</div><div class="tx"><b>Leadership Assessment</b><span>10 questions on your real instincts under pressure</span></div>${S.assessDone?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
-    <div class="row" onclick="show('pers')"><div class="ic">🧬</div><div class="tx"><b>Personality Analyzer</b><span>Read a crew member’s working style — and how to lead it</span></div>${S.simsDone.includes('pers')?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
-    <div class="row" onclick="show('crew')"><div class="ic">📋</div><div class="tx"><b>Crew Motivation Tracker</b><span>Track morale, strengths and watch-outs for your team</span></div><span class="chev">›</span></div>
-    <div class="row" onclick="show('convo')"><div class="ic">🕊️</div><div class="tx"><b>Difficult Conversation Simulator</b><span>The senior Bosun and the PPE habit</span></div>${S.simsDone.includes('convo')?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
-    <div class="row" onclick="show('nego')"><div class="ic">🤝</div><div class="tx"><b>Negotiation Simulator</b><span>The terminal wants your ballast faster</span></div>${S.simsDone.includes('nego')?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
+  <div class="section-head"><h2 style="font-size:1.05rem">Simulators</h2></div>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="row" onclick="show('convo')"><div class="ic">🕊️</div><div class="tx"><b>Difficult Conversations</b><span>${SIM_SETS.convo.scenarios.length} scenarios: the PPE Bosun, alcohol on duty, the man who wants out</span></div>${(S.simRuns['convo']||[]).length>=SIM_SETS['convo'].scenarios.length?'<span class="done">✓</span>':((S.simRuns['convo']||[]).length?`<span class="muted small mono">${(S.simRuns['convo']||[]).length}/${SIM_SETS['convo'].scenarios.length}</span>`:'')}<span class="chev">›</span></div>
+    <div class="row" onclick="show('nego')"><div class="ic">🤝</div><div class="tx"><b>Negotiation</b><span>${SIM_SETS.nego.scenarios.length} scenarios: the terminal ballast push, the drydock budget cut</span></div>${(S.simRuns['nego']||[]).length>=SIM_SETS['nego'].scenarios.length?'<span class="done">✓</span>':((S.simRuns['nego']||[]).length?`<span class="muted small mono">${(S.simRuns['nego']||[]).length}/${SIM_SETS['nego'].scenarios.length}</span>`:'')}<span class="chev">›</span></div>
+    <div class="row" onclick="show('psc')"><div class="ic">🛡️</div><div class="tx"><b>Inspections</b><span>${SIM_SETS.psc.scenarios.length} scenarios: the hostile PSC officer, the vetting rest-hour cross-check</span></div>${(S.simRuns['psc']||[]).length>=SIM_SETS['psc'].scenarios.length?'<span class="done">✓</span>':((S.simRuns['psc']||[]).length?`<span class="muted small mono">${(S.simRuns['psc']||[]).length}/${SIM_SETS['psc'].scenarios.length}</span>`:'')}<span class="chev">›</span></div>
+    <div class="row" onclick="show('crisis')"><div class="ic">🚒</div><div class="tx"><b>Crisis Command</b><span>${SIM_SETS.crisis.scenarios.length} scenarios: paint locker fire, mooring injury forward</span></div>${(S.simRuns['crisis']||[]).length>=SIM_SETS['crisis'].scenarios.length?'<span class="done">✓</span>':((S.simRuns['crisis']||[]).length?`<span class="muted small mono">${(S.simRuns['crisis']||[]).length}/${SIM_SETS['crisis'].scenarios.length}</span>`:'')}<span class="chev">›</span></div>
   </div>
-  <div class="section-head"><h2 style="font-size:1.08rem">Data</h2></div>
-  <div class="card">
-    <p class="muted small" style="margin-bottom:12px">Progress lives on this device. Export a backup before clearing the browser or switching devices, then import it on the new one.</p>
-    <div style="display:flex;gap:10px;flex-wrap:wrap">
-      <button class="btn" id="expBtn">Export progress (JSON)</button>
-      <button class="btn ghost" id="impBtn">Import backup</button>
-      <input type="file" id="impFile" accept="application/json" style="display:none">
-    </div>
+  <div class="section-head"><h2 style="font-size:1.05rem">Assessments</h2></div>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="row" onclick="show('assess')"><div class="ic">🪞</div><div class="tx"><b>Leadership Assessment</b><span>20 questions on your real instincts under pressure</span></div>${S.assessDone?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
+    <div class="row" onclick="show('team')"><div class="ic">🌡️</div><div class="tx"><b>Crew Climate Check</b><span>10 honest statements that measure the health of your command climate</span></div>${S.simsDone.includes('team')?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
+    <div class="row" onclick="show('pers')"><div class="ic">🧬</div><div class="tx"><b>Personality Analyzer</b><span>Read a crew member working style — and how to lead it</span></div>${S.simsDone.includes('pers')?'<span class="done">✓</span>':''}<span class="chev">›</span></div>
+    <div class="row" onclick="show('drill')"><div class="ic">🎯</div><div class="tx"><b>Quick-Fire Drill</b><span>10 random questions from all modules — daily bonus XP at 7+</span></div><span class="chev">›</span></div>
+  </div>
+  <div class="section-head"><h2 style="font-size:1.05rem">References & Records</h2></div>
+  <div class="grid">
+    <div class="row" onclick="show('phrases')"><div class="ic">🗣️</div><div class="tx"><b>Leadership Phrasebook</b><span>Word-for-word lines for corrections, refusals, inspections, and hard moments</span></div><span class="chev">›</span></div>
+    <div class="row" onclick="show('crew')"><div class="ic">📋</div><div class="tx"><b>Crew Motivation Tracker</b><span>Private morale log: moods, motivators, and watch-outs for your team</span></div><span class="chev">›</span></div>
+  </div>
+  <div class="section-head"><h2 style="font-size:1.08rem">App</h2></div>
+  <div class="grid">
+    <div class="row" onclick="show('stats')"><div class="ic">📊</div><div class="tx"><b>My Statistics</b><span>XP history, progress bars, category mastery, collections</span></div><span class="chev">›</span></div>
+    <div class="row" onclick="show('settings')"><div class="ic">⚙️</div><div class="tx"><b>Settings & Backup</b><span>Theme, text size, export and import your progress</span></div><span class="chev">›</span></div>
   </div>`;
 
-BIND.tools = () => {
+BIND.settings = () => {
   document.getElementById('expBtn').onclick = () => {
     const data = {app:'master-of-command', v:3, exported:new Date().toISOString(),
       xp:S.xp, doneModules:S.doneModules, doneScenarios:S.doneScenarios, doneChallenges:S.doneChallenges,
       badges:S.badges, crew:S.crew, streak:S.streak, lastVisit:S.lastVisit, assessDone:S.assessDone,
-      simsDone:S.simsDone, quotesSeen:S.quotesSeen, theme:S.theme, moduleDates:S.moduleDates, reviews:S.reviews};
+      simsDone:S.simsDone, quotesSeen:S.quotesSeen, theme:S.theme, moduleDates:S.moduleDates, reviews:S.reviews, simRuns:S.simRuns, courseDays:S.courseDays, courseChecks:S.courseChecks, doneCases:S.doneCases, notes:S.notes, favQuotes:S.favQuotes, favPhrases:S.favPhrases, fontSize:S.fontSize, xpLog:S.xpLog};
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,1)], {type:'application/json'}));
     a.download = 'master-of-command-backup-' + new Date().toISOString().slice(0,10) + '.json';
@@ -2457,7 +3077,7 @@ BIND.tools = () => {
         const d = JSON.parse(r.result);
         if (d.app !== 'master-of-command') throw new Error('wrong file');
         ['xp','doneModules','doneScenarios','doneChallenges','badges','crew','streak','lastVisit',
-         'assessDone','simsDone','quotesSeen','theme','moduleDates','reviews'].forEach(k => { if (d[k] !== undefined) S[k] = d[k]; });
+         'assessDone','simsDone','quotesSeen','theme','moduleDates','reviews','simRuns','courseDays','courseChecks','doneCases','notes','favQuotes','favPhrases','fontSize','xpLog'].forEach(k => { if (d[k] !== undefined) S[k] = d[k]; });
         save(); applyTheme(); checkBadges();
         toast('Backup imported'); show('dash');
       } catch { toast('Not a valid Master of Command backup'); }
@@ -2493,7 +3113,7 @@ BIND.assess = () => {
     const band = ASSESS_BANDS.find(b=>total>=b.min);
     document.getElementById('aResult').innerHTML = `
       <div class="card gold" style="margin-top:16px">
-        <div class="eyebrow">Result · ${total}/40</div>
+        <div class="eyebrow">Result · ${total}/80</div>
         <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.2rem;margin:6px 0 8px">${band.t}</h3>
         <p style="color:var(--text-soft);font-size:.93rem">${band.b}</p>
       </div>`;
@@ -2581,15 +3201,32 @@ BIND.crew = () => {
   draw();
 };
 
-/* ---------- SIMULATORS (shared engine) ---------- */
-function simView(sim, key){
+/* ---------- SIMULATORS (shared engine + pickers) ---------- */
+let curSim = {key:'convo', i:0};
+window.runSim = (key, i) => { curSim = {key, i}; show('simrun'); };
+
+function simPicker(key){
+  const set = SIM_SETS[key];
+  const runs = S.simRuns[key] || [];
   return `${back('tools','Tools')}
+  <div class="section-head"><h2>${set.title}</h2><span class="muted small">${runs.length}/${set.scenarios.length} completed</span></div>
+  <p class="muted" style="margin-bottom:14px">Each scenario has three decision points with feedback on every choice. Choose one to run — you can repeat any of them.</p>
+  <div class="grid">
+    ${set.scenarios.map((s,i)=>`<div class="row" onclick="runSim('${key}',${i})">
+      <div class="ic mono">${String(i+1).padStart(2,'0')}</div>
+      <div class="tx"><b>${s.title}</b><span>${s.intro}</span></div>
+      ${runs.includes(i)?'<span class="done">✓</span>':''}
+      <span class="chev">›</span></div>`).join('')}
+  </div>`;
+}
+function simView(sim, key){
+  return `${back(key, SIM_SETS[key].title)}
   <div class="section-head"><h2>${sim.title}</h2></div>
   <div class="card gold" style="margin-bottom:14px"><p style="color:var(--text-soft);font-size:.93rem">${sim.intro}</p></div>
   <div id="simSteps"></div>
   <div id="simResult"></div>`;
 }
-function simBind(sim, key){
+function simBind(sim, key, idx){
   let step = 0, score = 0;
   const stepsEl = document.getElementById('simSteps');
   const drawStep = () => {
@@ -2625,17 +3262,24 @@ function simBind(sim, key){
         <div class="eyebrow">Debrief · ${score}/9</div>
         <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.2rem;margin:6px 0 8px">${band.t}</h3>
         <p style="color:var(--text-soft);font-size:.93rem">${band.b}</p>
-        <div style="margin-top:14px"><button class="btn ghost" onclick="show('${key==='convo'?'convo':'nego'}')">Run it again</button></div>
+        <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap">
+          <button class="btn ghost" onclick="runSim('${key}',${idx})">Run it again</button>
+          <button class="btn primary" onclick="show('${key}')">More scenarios</button>
+        </div>
       </div>`;
     document.getElementById('simResult').scrollIntoView({behavior:'smooth'});
-    if (!S.simsDone.includes(key)) { S.simsDone.push(key); save(); addXP(40,'Simulation complete'); }
+    if (!S.simRuns[key]) S.simRuns[key] = [];
+    const firstRun = !S.simRuns[key].includes(idx);
+    if (firstRun) S.simRuns[key].push(idx);
+    if (!S.simsDone.includes(key)) S.simsDone.push(key);
+    if (firstRun) { save(); addXP(40,'Scenario complete'); checkBadges(); } else save();
   };
   drawStep();
 }
-VIEWS.convo = () => simView(CONVO_SIM,'convo');
-BIND.convo = () => simBind(CONVO_SIM,'convo');
-VIEWS.nego = () => simView(NEGO_SIM,'nego');
-BIND.nego = () => simBind(NEGO_SIM,'nego');
+VIEWS.simrun = () => simView(SIM_SETS[curSim.key].scenarios[curSim.i], curSim.key);
+BIND.simrun = () => simBind(SIM_SETS[curSim.key].scenarios[curSim.i], curSim.key, curSim.i);
+VIEWS.convo = () => simPicker('convo');
+VIEWS.nego = () => simPicker('nego');
 
 
 /* =====================================================
@@ -2704,6 +3348,328 @@ VIEWS.laws = () => `
   </div>`).join('')}
   <div class="callout psy" style="margin-top:6px"><div class="ctitle">The pattern beneath all 48</div>Strip the cynicism away and the laws reduce to four shipboard constants: guard your reputation, control your emotions, understand the person in front of you, and think further ahead than anyone else in the room. An officer who masters those four needs very few tricks.</div>`;
 
+VIEWS.psc = () => simPicker('psc');
+VIEWS.crisis = () => simPicker('crisis');
+
+/* ---------- CREW CLIMATE CHECK ---------- */
+let tAnswers = [];
+VIEWS.team = () => {
+  tAnswers = new Array(TEAMCHECK.length).fill(-1);
+  return `${back('tools','Tools')}
+  <div class="section-head"><h2>Crew Climate Check</h2></div>
+  <p class="muted" style="margin-bottom:14px">Score each statement about your current team, honestly. Nobody sees this but you — and an honest low score is worth more than a flattering high one.</p>
+  ${TEAMCHECK.map((q,qi)=>`<div class="card" style="margin-bottom:12px">
+    <p style="font-size:.93rem;margin-bottom:10px"><b class="mono" style="color:var(--brass)">${String(qi+1).padStart(2,'0')}</b>&nbsp; ${q}</p>
+    <div class="opt" data-q="${qi}" data-v="2">True — consistently</div>
+    <div class="opt" data-q="${qi}" data-v="1">Partly — sometimes or for some men</div>
+    <div class="opt" data-q="${qi}" data-v="0">Not really — honest answer is no</div>
+  </div>`).join('')}
+  <button class="btn primary" id="tSubmit">Show my climate result</button>
+  <div id="tResult"></div>`;
+};
+BIND.team = () => {
+  document.querySelectorAll('.opt[data-q]').forEach(el => el.onclick = () => {
+    const qi = +el.dataset.q;
+    tAnswers[qi] = +el.dataset.v;
+    document.querySelectorAll(`.opt[data-q="${qi}"]`).forEach(x=>x.classList.remove('sel'));
+    el.classList.add('sel');
+  });
+  document.getElementById('tSubmit').onclick = () => {
+    if (tAnswers.includes(-1)) { toast('Score all ' + TEAMCHECK.length + ' statements first'); return; }
+    const total = tAnswers.reduce((a,b)=>a+b,0);
+    const band = TEAM_BANDS.find(b=>total>=b.min);
+    const weak = tAnswers.map((v,i)=>({v,i})).filter(x=>x.v===0).map(x=>x.i+1);
+    document.getElementById('tResult').innerHTML = `
+      <div class="card gold" style="margin-top:16px">
+        <div class="eyebrow">Climate score · ${total}/20</div>
+        <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.2rem;margin:6px 0 8px">${band.t}</h3>
+        <p style="color:var(--text-soft);font-size:.93rem">${band.b}</p>
+        ${weak.length?`<p class="muted small" style="margin-top:10px">Weakest items to work first: ${weak.join(', ')}</p>`:''}
+      </div>`;
+    document.getElementById('tResult').scrollIntoView({behavior:'smooth'});
+    if (!S.simsDone.includes('team')) { S.simsDone.push('team'); save(); addXP(30,'Climate check complete'); }
+  };
+};
+
+/* ---------- LEADERSHIP PHRASEBOOK ---------- */
+window.favP = (key, ev) => {
+  ev.stopPropagation();
+  const p = S.favPhrases.indexOf(key);
+  if (p>=0) S.favPhrases.splice(p,1); else S.favPhrases.push(key);
+  save(); show('phrases');
+};
+function phraseCard(it, key){
+  const on = S.favPhrases.includes(key);
+  return `<div class="card" style="margin-bottom:10px;position:relative">
+    <button class="starbtn ${on?'on':''}" onclick="favP('${key}',event)" aria-label="Save line">${on?'★':'☆'}</button>
+    <div class="scriptbox" style="margin-right:26px">${it.s}</div>
+    <p class="muted small" style="margin-top:8px">${it.w}</p>
+  </div>`;
+}
+VIEWS.phrases = () => `${back('tools','Tools')}
+  <div class="section-head"><h2>Leadership Phrasebook</h2></div>
+  <p class="muted" style="margin-bottom:14px">Tested lines for the hard moments — what to say, and when to say it. Star your favorites; adapt the brackets to your situation.</p>
+  ${S.favPhrases.length?`<div class="section-head"><h2 style="font-size:1.05rem">★ My Lines</h2></div>
+  ${S.favPhrases.map(key=>{const[ci,ii]=key.split(':').map(Number);const it=PHRASES[ci]&&PHRASES[ci].items[ii];return it?phraseCard(it,key):'';}).join('')}`:''}
+  ${PHRASES.map((cat,ci)=>`
+    <div class="section-head"><h2 style="font-size:1.05rem">${cat.c}</h2></div>
+    ${cat.items.map((it,ii)=>phraseCard(it, ci+':'+ii)).join('')}`).join('')}
+  <div class="callout gold" style="margin-top:8px"><div class="ctitle">How to use this page</div>Read one category before the situation finds you — before an inspection, before a hard conversation, before port. A line you rehearsed once arrives by itself when the pressure comes. A line you never read does not.</div>`;
+
+/* ---------- 30-DAY COURSE ---------- */
+function taskDone(d, ti){
+  const t = COURSE[d].tasks[ti];
+  if (t.m) return !!S.courseChecks[d+':'+ti];
+  if (t.k==='module') return S.doneModules.includes(t.id);
+  if (t.k==='scen') return S.doneScenarios.includes(t.i);
+  if (t.k==='sim') return (S.simRuns[t.key]||[]).includes(t.i);
+  if (t.k==='tool') return t.id==='assess' ? !!S.assessDone : S.simsDone.includes(t.id);
+  if (t.k==='review') return reviewDue().length===0 && S.doneModules.length>0;
+  return false;
+}
+function dayDone(d){ return COURSE[d].tasks.every((_,ti)=>taskDone(d,ti)); }
+function currentDay(){ for (let d=0; d<COURSE.length; d++){ if (!S.courseDays.includes(d)) return d; } return COURSE.length; }
+window.taskGo = (d, ti) => {
+  const t = COURSE[d].tasks[ti];
+  if (t.m) { S.courseChecks[d+':'+ti] = !S.courseChecks[d+':'+ti]; save(); show('course'); return; }
+  if (t.k==='module') show('module', t.id);
+  else if (t.k==='scen') show('scenario', t.i);
+  else if (t.k==='sim') runSim(t.key, t.i);
+  else if (t.k==='tool') show(t.id);
+  else if (t.k==='review') show('review');
+};
+window.completeDay = d => {
+  if (!dayDone(d) || S.courseDays.includes(d)) return;
+  S.courseDays.push(d); save();
+  addXP(20, 'Day ' + (d+1) + ' complete');
+  checkBadges();
+  show('course');
+};
+function courseCardHTML(){
+  const cd = currentDay();
+  if (cd >= COURSE.length) return `<div class="card gold" style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">30-Day Command Course</div><p class="muted small" style="margin-top:6px">Graduated. All 30 days complete — the course is yours to revisit anytime.</p></div><span class="laurel">&#127891; Graduate</span></div></div>`;
+  return `<div class="card" style="margin-bottom:14px">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
+      <div style="flex:1;min-width:180px"><div class="eyebrow">30-Day Command Course</div>
+      <p class="muted small" style="margin:6px 0 8px">Day ${cd+1} of 30 — ${COURSE[cd].t}</p>
+      <div class="bar"><i style="width:${Math.round(100*S.courseDays.length/COURSE.length)}%"></i></div></div>
+      <button class="btn primary" onclick="show('course')">${S.courseDays.length?'Continue':'Start course'}</button>
+    </div>
+  </div>`;
+}
+VIEWS.course = () => {
+  const cd = currentDay();
+  return `${back('dash','Dashboard')}
+  <div class="section-head"><h2>30-Day Command Course</h2><span class="muted small">${S.courseDays.length}/30 days</span></div>
+  <p class="muted" style="margin-bottom:14px">A guided path through the whole academy: one focused day at a time. Tasks tick automatically as you complete them anywhere in the app; reading tasks you tick yourself.</p>
+  ${COURSE.map((day,d)=>{
+    const done = S.courseDays.includes(d);
+    const locked = d > cd;
+    const open = d === cd;
+    if (!open) return `<div class="row" style="${locked?'opacity:.45':''}" ${done?`onclick="show('courseday',${d})"`:''}>
+      <div class="ic mono">${String(d+1).padStart(2,'0')}</div>
+      <div class="tx"><b>${day.t}</b><span>${day.tasks.length} task${day.tasks.length>1?'s':''}</span></div>
+      ${done?'<span class="done">✓</span>':(locked?'<span class="muted small mono">locked</span>':'')}
+      ${done?'<span class="chev">›</span>':''}
+    </div>`;
+    return `<div class="card gold" style="margin:6px 0 10px">
+      <div class="eyebrow">Day ${d+1} · current</div>
+      <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.15rem;margin:4px 0 10px">${day.t}</h3>
+      ${day.tasks.map((t,ti)=>{
+        const td = taskDone(d,ti);
+        return `<div class="opt ${td?'good':''}" style="display:flex;align-items:center;gap:10px" onclick="taskGo(${d},${ti})">
+          <span class="mono" style="flex:none">${td?'✓':(t.m?'☐':'›')}</span><span style="flex:1">${t.l}${t.m?' <span class=\"muted small\">(tap to tick)</span>':''}</span>
+        </div>`;
+      }).join('')}
+      <div style="margin-top:12px"><button class="btn ${dayDone(d)?'primary':'ghost'}" ${dayDone(d)?'':'disabled'} onclick="completeDay(${d})">${dayDone(d)?'Complete Day '+(d+1)+'  +20 XP':'Finish the tasks above to complete the day'}</button></div>
+    </div>`;
+  }).join('')}`;
+};
+VIEWS.courseday = d => `${back('course','Course')}
+  <div class="section-head"><h2>Day ${d+1} — ${COURSE[d].t}</h2><span class="laurel">✓ Complete</span></div>
+  <div class="grid">${COURSE[d].tasks.map((t,ti)=>`<div class="row" onclick="taskGo(${d},${ti})"><div class="ic mono">${ti+1}</div><div class="tx"><b>${t.l}</b></div><span class="done">✓</span><span class="chev">›</span></div>`).join('')}</div>`;
+
+/* ---------- CASE FILES ---------- */
+VIEWS.cases = () => `${back('scen','Scenarios')}
+  <div class="section-head"><h2>Case Files</h2><span class="muted small">${S.doneCases.length}/${CASES.length} studied</span></div>
+  <p class="muted" style="margin-bottom:14px">Real ships, real inquiries, real lessons — each casualty read through the command lens. These are the voyages every leadership rule in this app was written in.</p>
+  <div class="grid">
+    ${CASES.map(c=>`<div class="row" onclick="show('casefile','${c.id}')">
+      <div class="ic mono">${String(c.year).slice(2)}</div>
+      <div class="tx"><b>${c.ship} (${c.year})</b><span>${c.t}</span></div>
+      ${S.doneCases.includes(c.id)?'<span class="done">✓</span>':''}
+      <span class="chev">›</span></div>`).join('')}
+  </div>`;
+VIEWS.casefile = id => {
+  const c = CASES.find(x=>x.id===id), done = S.doneCases.includes(id);
+  return `${back('cases','Case Files')}
+  <div class="card gold">
+    <div class="medalrow"><div class="medal mono" style="font-size:.85rem">${c.year}</div><div><div class="eyebrow">${c.ship}</div><h2 style="font-size:1.3rem;margin-top:2px">${c.t}</h2></div></div>
+    <div class="goldrule"></div>
+  </div>
+  <div class="callout"><div class="ctitle">What happened</div>${c.what}</div>
+  <div class="callout psy"><div class="ctitle">Where command failed</div>${c.command}</div>
+  <div class="callout gold"><div class="ctitle">Lessons for your bridge</div><ul class="clean">${c.lessons.map(l=>`<li>${l}</li>`).join('')}</ul></div>
+  <div style="margin-top:16px"><button class="btn ${done?'ghost':'primary'}" id="caseBtn" ${done?'disabled':''}>${done?'Studied ✓':'Mark as studied  +15 XP'}</button></div>`;
+};
+BIND.casefile = id => {
+  const b = document.getElementById('caseBtn');
+  if (b) b.onclick = () => {
+    if (!S.doneCases.includes(id)) { S.doneCases.push(id); save(); addXP(15,'Case file studied'); checkBadges(); show('casefile', id); }
+  };
+};
+
+/* ---------- DRILL MODE ---------- */
+let drill = null;
+VIEWS.drill = () => {
+  const pool = [];
+  Object.keys(QUIZZES).forEach(mid => QUIZZES[mid].forEach(q => pool.push({...q, src: MODULES.find(m=>m.id===mid).title})));
+  drill = { qs: pool.sort(()=>Math.random()-.5).slice(0,10), i:0, right:0 };
+  return `${back('tools','Tools')}
+  <div class="section-head"><h2>Quick-Fire Drill</h2><span class="muted small mono" id="drillPos">1/10</span></div>
+  <p class="muted" style="margin-bottom:14px">Ten random questions from across all twenty modules. Score 7 or more for bonus XP (once per day).</p>
+  <div id="drillArea"></div>`;
+};
+BIND.drill = () => {
+  const area = document.getElementById('drillArea');
+  const draw = () => {
+    if (drill.i >= drill.qs.length) {
+      const passed = drill.right >= 7;
+      const fresh = passed && S.drillDay !== TODAY;
+      if (fresh) { S.drillDay = TODAY; save(); addXP(15,'Drill passed'); }
+      area.innerHTML = `<div class="card gold fadein" style="text-align:center;padding:28px 18px">
+        <div style="font-size:1.8rem;margin-bottom:6px">${passed?'🎯':'📚'}</div>
+        <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi)">${drill.right}/10 ${passed?'— sharp':'— keep training'}</h3>
+        <p class="muted small" style="margin-top:6px">${passed?(fresh?'Bonus XP earned.':'Already earned today — drill again for practice.'):'Seven or more earns the daily bonus. The wrong ones showed you exactly which modules to revisit.'}</p>
+        <div style="margin-top:14px;display:flex;gap:10px;justify-content:center"><button class="btn primary" onclick="show('drill')">Drill again</button><button class="btn ghost" onclick="show('tools')">Done</button></div></div>`;
+      return;
+    }
+    const q = drill.qs[drill.i];
+    document.getElementById('drillPos').textContent = (drill.i+1)+'/10';
+    area.innerHTML = `<div class="card fadein">
+      <div class="eyebrow">${q.src}</div>
+      <p style="margin:10px 0;font-size:.94rem;color:var(--text-bright)">${q.q}</p>
+      ${q.o.map((op,oi)=>`<div class="opt" data-o="${oi}">${op}</div>`).join('')}
+    </div>`;
+    area.querySelectorAll('.opt').forEach(el => el.onclick = () => {
+      if (area.dataset.locked) return;
+      area.dataset.locked='1';
+      const pick = +el.dataset.o;
+      if (pick===q.a) drill.right++;
+      area.querySelectorAll('.opt').forEach(x=>{
+        const oi=+x.dataset.o;
+        if (oi===q.a) x.classList.add('good'); else if (oi===pick) x.classList.add('bad');
+        x.style.cursor='default';
+      });
+      drill.i++;
+      setTimeout(()=>{ delete area.dataset.locked; draw(); }, pick===q.a?550:1300);
+    });
+  };
+  draw();
+};
+
+/* ---------- SETTINGS ---------- */
+VIEWS.settings = () => `${back('tools','Tools')}
+  <div class="section-head"><h2>Settings</h2></div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="eyebrow">Theme</div>
+    <div class="chiprow" style="margin-top:10px">
+      <button class="chip ${S.theme!=='day'?'on':''}" onclick="S.theme='night';save();applyTheme();show('settings')">Night watch</button>
+      <button class="chip ${S.theme==='day'?'on':''}" onclick="S.theme='day';save();applyTheme();show('settings')">Day watch</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="eyebrow">Text size</div>
+    <p class="muted small" style="margin-top:6px">Larger sizes help on deck in bright sun.</p>
+    <div class="chiprow" style="margin-top:10px">
+      <button class="chip ${S.fontSize==='std'?'on':''}" onclick="S.fontSize='std';save();applyTheme();show('settings')">Standard</button>
+      <button class="chip ${S.fontSize==='lg'?'on':''}" onclick="S.fontSize='lg';save();applyTheme();show('settings')">Large</button>
+      <button class="chip ${S.fontSize==='xl'?'on':''}" onclick="S.fontSize='xl';save();applyTheme();show('settings')">Extra large</button>
+    </div>
+  </div>
+  <div class="card">
+    <div class="eyebrow">Backup</div>
+    <p class="muted small" style="margin:6px 0 12px">Progress, notes, and saved lines live on this device. Export before clearing the browser or switching devices.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" id="expBtn">Export progress (JSON)</button>
+      <button class="btn ghost" id="impBtn">Import backup</button>
+      <input type="file" id="impFile" accept="application/json" style="display:none">
+    </div>
+  </div>`;
+
+/* ---------- WELCOME ---------- */
+VIEWS.welcome = () => `
+  <section class="hero card gold" style="text-align:center;padding:36px 22px">
+    <svg class="compass" width="170" height="170" viewBox="0 0 40 40" fill="none" aria-hidden="true" style="left:50%;margin-left:-85px">
+      <circle cx="20" cy="20" r="18.5" stroke="#C8A24E" stroke-width="1"/>
+      <path d="M20 4 L22.4 17.6 L36 20 L22.4 22.4 L20 36 L17.6 22.4 L4 20 L17.6 17.6 Z" fill="#C8A24E"/>
+    </svg>
+    <div class="eyebrow">Welcome aboard</div>
+    <h1 style="font-size:1.7rem;margin:8px 0">Master of Command</h1>
+    <p class="muted" style="max-width:420px;margin:0 auto">The leadership academy for ship officers — built for the deck, not the classroom.</p>
+  </section>
+  <div class="grid" style="margin-bottom:16px">
+    <div class="card" style="text-align:center"><div class="welcome-ic">📖</div><b style="font-size:.95rem">Learn</b><p class="muted small" style="margin-top:6px">20 modules, 48 laws, real case files — all in clear, simple English with deck examples.</p></div>
+    <div class="card" style="text-align:center"><div class="welcome-ic">🎯</div><b style="font-size:.95rem">Train</b><p class="muted small" style="margin-top:6px">36 scenarios, 9 branching simulators, quizzes, and drills — decide first, then learn why.</p></div>
+    <div class="card" style="text-align:center"><div class="welcome-ic">⚓</div><b style="font-size:.95rem">Track</b><p class="muted small" style="margin-top:6px">XP, ranks from Cadet to Master Mariner, a 30-day guided course, and spaced-repetition review.</p></div>
+  </div>
+  <div style="text-align:center"><button class="btn primary" style="padding:13px 30px" onclick="S.seen=true;save();show('dash')">Take command</button>
+  <p class="muted small" style="margin-top:12px">Everything stays on this device. No account, no tracking.</p></div>`;
+
+/* ---------- STATS ---------- */
+function statBar(label, val, max, color){
+  const pct = max ? Math.round(100*val/max) : 0;
+  return `<div style="margin-bottom:11px">
+    <div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:5px"><span style="color:var(--text-soft)">${label}</span><span class="mono" style="color:${color||'var(--brass)'}">${val}/${max}</span></div>
+    <div class="bar"><i style="width:${pct}%;${color?'background:'+color:''}"></i></div>
+  </div>`;
+}
+VIEWS.stats = () => {
+  const rank = rankFor(S.xp);
+  // last 14 days xp
+  const days = []; let maxXp = 1;
+  for (let d = TODAY-13; d <= TODAY; d++){ const v = S.xpLog[d]||0; days.push(v); if (v>maxXp) maxXp=v; }
+  const W=336, bw=18, gap=6;
+  const bars = days.map((v,i)=>{
+    const h = Math.max(2, Math.round(58*v/maxXp));
+    return `<rect x="${i*(bw+gap)}" y="${62-h}" width="${bw}" height="${h}" rx="3" fill="${v?'var(--brass)':'var(--line-soft)'}" opacity="${v?'.9':'1'}"/>${v?`<text x="${i*(bw+gap)+bw/2}" y="${56-h}" text-anchor="middle" font-size="7" fill="var(--slate)" font-family="IBM Plex Mono">${v}</text>`:''}`;
+  }).join('');
+  const catDone = SCEN_CATS.map((c,ci)=>SCENARIOS.filter((s,i)=>s.cat===ci && S.doneScenarios.includes(i)).length);
+  const toolsDone = (S.assessDone?1:0) + ['pers','convo','nego','psc','crisis','team'].filter(k=>S.simsDone.includes(k)).length;
+  const simScen = Object.keys(SIM_SETS).reduce((a,k)=>a+(S.simRuns[k]||[]).length,0);
+  const simTotal = Object.keys(SIM_SETS).reduce((a,k)=>a+SIM_SETS[k].scenarios.length,0);
+  return `${back('tools','Tools')}
+  <div class="section-head"><h2>My Statistics</h2></div>
+  <div class="statline" style="margin-bottom:14px">
+    <div class="stat"><b>${S.xp}</b><span>Total XP</span></div>
+    <div class="stat"><b>${rank.name.split(' ')[0]}</b><span>Rank</span></div>
+    <div class="stat"><b>${S.streak}</b><span>Day streak</span></div>
+    <div class="stat"><b>${S.badges.length}/${BADGES.length}</b><span>Badges</span></div>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="eyebrow">XP — last 14 days</div>
+    <svg viewBox="0 0 ${W} 64" style="width:100%;height:auto;margin-top:12px" aria-label="XP per day">${bars}</svg>
+    <p class="muted small" style="margin-top:6px;text-align:right">today →</p>
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="eyebrow" style="margin-bottom:12px">Academy progress</div>
+    ${statBar('Modules', S.doneModules.length, MODULES.length)}
+    ${statBar('Scenarios', S.doneScenarios.length, SCENARIOS.length)}
+    ${statBar('Simulator scenarios', simScen, simTotal)}
+    ${statBar('Case files', S.doneCases.length, CASES.length)}
+    ${statBar('Tools completed', toolsDone, 7)}
+    ${statBar('30-Day Course', S.courseDays.length, COURSE.length)}
+  </div>
+  <div class="card" style="margin-bottom:14px">
+    <div class="eyebrow" style="margin-bottom:12px">Scenario mastery by category</div>
+    ${SCEN_CATS.map((c,ci)=>statBar(c, catDone[ci], 3, catDone[ci]===3?'var(--good)':null)).join('')}
+  </div>
+  <div class="card">
+    <div class="eyebrow" style="margin-bottom:10px">Collection</div>
+    <p class="muted small">📝 ${Object.keys(S.notes).length} personal notes · ★ ${S.favQuotes.length} saved quotes · 🗣️ ${S.favPhrases.length} saved lines · ✒️ ${Math.min(S.quotesSeen,QUOTES.length)} quotes browsed</p>
+  </div>`;
+};
+
 /* =====================================================
    SEARCH
    ===================================================== */
@@ -2731,6 +3697,10 @@ sInput.addEventListener('input', () => {
     hits.push({t:p.t, s:'Power & Influence', go:`show('power')`}); });
   LAWS.forEach(l => { if ((l.t+' '+l.b).toLowerCase().includes(q))
     hits.push({t:'Law '+l.n+' — '+l.t, s:'48 Laws of Power', go:`show('laws')`}); });
+  PHRASES.forEach(c => c.items.forEach(it => { if ((it.s+' '+it.w).toLowerCase().includes(q))
+    hits.push({t:it.s.length>70?it.s.slice(0,70)+'…':it.s, s:'Phrasebook · '+c.c, go:`show('phrases')`}); }));
+  CASES.forEach(c => { if ((c.ship+' '+c.t+' '+c.what+' '+c.command).toLowerCase().includes(q))
+    hits.push({t:c.ship+' ('+c.year+') — '+c.t, s:'Case Files', go:`show('casefile','${c.id}')`}); });
   sRes.innerHTML = hits.length ? hits.slice(0,25).map(h =>
     `<div class="row" onclick="overlay.classList.remove('open');${h.go}">
       <div class="tx"><b>${esc(h.t)}</b><span>${h.s}</span></div><span class="chev">›</span></div>`).join('')
@@ -2740,9 +3710,10 @@ sInput.addEventListener('input', () => {
 /* =====================================================
    INIT
    ===================================================== */
+['convo','nego','psc','crisis'].forEach(k=>{ if(S.simsDone.includes(k) && !(S.simRuns[k]||[]).length){ S.simRuns[k]=[0]; } });
 applyTheme();
 checkBadges();
-show('dash');
+show(S.seen ? 'dash' : 'welcome');
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   navigator.serviceWorker.register('./sw.js').catch(()=>{});
 }
