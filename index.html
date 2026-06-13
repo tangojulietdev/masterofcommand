@@ -2576,7 +2576,14 @@ function renderNav(){
     b.onclick = () => show(b.dataset.v));
 }
 
-function show(view, arg){
+let navStack = [];
+const ROOTS = ['dash','library','scen','tools','laws'];  // bottom-nav roots = no back
+function show(view, arg, isBack){
+  if (!isBack && route && route.view && route.view !== view) {
+    // pushing forward: record where we were, unless we're on a root re-tapping
+    if (!(ROOTS.includes(view) )) navStack.push(route);
+    else navStack = []; // landing on a root clears history
+  }
   route = {view, arg};
   renderNav();
   const main = document.getElementById('main');
@@ -2586,6 +2593,13 @@ function show(view, arg){
   main.querySelectorAll('.grid > *, .badgegrid > *').forEach((el,i)=>{ el.classList.add('riseIn'); el.style.animationDelay = Math.min(90+i*38, 700)+'ms'; });
   if (BIND[view]) BIND[view](arg);
 }
+
+function goBack(){
+  const prev = navStack.pop();
+  if (prev) show(prev.view, prev.arg, true);
+  else show('dash', null, true);
+}
+window.goBack = goBack;
 
 /* ---------- shared snippets ---------- */
 function stripesHTML(n, sm){
@@ -2607,8 +2621,8 @@ function ringHTML(score){
   </div>`;
 }
 function back(view, label){
-  return `<button class="backbtn" onclick="show('${view}')">
-    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 19 8 12l7-7"/></svg> ${label}</button>`;
+  return `<button class="backbtn" onclick="goBack()">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M15 19 8 12l7-7"/></svg> ${label||'Back'}</button>`;
 }
 
 /* =====================================================
@@ -3413,23 +3427,8 @@ VIEWS.lawdetail = () => {
       <span class="lawcount mono">${l.n} / ${LAWS.length}</span>
       <button class="btn ghost" onclick="lawStep(1)" aria-label="Next law">Next ›</button>
     </div>
-    <p class="muted small" style="text-align:center;margin-top:10px">Swipe left or right to move between laws</p>
+    <p class="muted small" style="text-align:center;margin-top:10px">Use Prev / Next to move between laws, or swipe right to go back</p>
   </div>`;
-};
-BIND.lawdetail = () => {
-  const el = document.getElementById('lawSwipe');
-  if (!el) return;
-  let x0 = null, y0 = null;
-  el.addEventListener('touchstart', e => { const t = e.changedTouches[0]; x0 = t.clientX; y0 = t.clientY; }, {passive:true});
-  el.addEventListener('touchend', e => {
-    if (x0 === null) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - x0, dy = t.clientY - y0;
-    if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.6) {
-      lawStep(dx < 0 ? 1 : -1);   // swipe left = next, swipe right = prev
-    }
-    x0 = y0 = null;
-  }, {passive:true});
 };
 
 VIEWS.psc = () => simPicker('psc');
@@ -3809,6 +3808,27 @@ sInput.addEventListener('input', () => {
 applyTheme();
 checkBadges();
 show('dash');
+
+/* ---------- global swipe-right = go back ---------- */
+(function(){
+  const main = document.getElementById('main');
+  if (!main) return;
+  let x0=null, y0=null, t0=0;
+  main.addEventListener('touchstart', e=>{
+    if (e.touches.length !== 1) { x0=null; return; }
+    const t=e.changedTouches[0]; x0=t.clientX; y0=t.clientY; t0=Date.now();
+  }, {passive:true});
+  main.addEventListener('touchend', e=>{
+    if (x0===null) return;
+    const t=e.changedTouches[0];
+    const dx=t.clientX-x0, dy=t.clientY-y0, dt=Date.now()-t0;
+    x0=null;
+    // right swipe, mostly horizontal, started near left edge OR a clear long swipe, quick enough, and not on a root page
+    const horizontal = dx > 70 && Math.abs(dx) > Math.abs(dy)*2;
+    const isRoot = ROOTS.includes(route.view);
+    if (horizontal && dt < 600 && !isRoot) goBack();
+  }, {passive:true});
+})();
 if ('serviceWorker' in navigator && location.protocol.indexOf('http') === 0) {
   navigator.serviceWorker.register('./sw.js').then(reg => {
     // check for a new SW every load and every 30 min while open
