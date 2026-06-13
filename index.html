@@ -301,10 +301,7 @@ main{flex:1;min-width:0;padding:18px 16px calc(var(--nav-h) + 28px);max-width:98
   position:relative;padding:18px 18px 14px 22px;margin-bottom:12px;
   background:var(--glass-2);border:1px solid var(--line-soft);border-radius:14px;
 }
-.quote::before{
-  content:"";position:absolute;left:0;top:14px;bottom:14px;width:2px;
-  background:linear-gradient(180deg,var(--brass-hi),transparent);
-}
+
 .quote p{font-family:'Marcellus',serif;font-size:1.02rem;line-height:1.5;color:var(--text-bright)}
 .quote footer{margin-top:8px;display:flex;justify-content:space-between;align-items:center;gap:10px}
 .quote cite{font-style:normal;font-family:'IBM Plex Mono',monospace;font-size:.68rem;letter-spacing:.12em;color:var(--brass);text-transform:uppercase}
@@ -464,9 +461,8 @@ html, body, .card, .topbar, .bnav, .row, .stat, .quote, .principle, .callout, .o
 .voyage .route-done{animation:dashflow 1.6s linear infinite}
 
 /* ---------- quotes v2 ---------- */
-.quote{border-left:3px solid var(--qa,var(--brass));transition:transform .25s ease,border-color .25s,box-shadow .25s}
+.quote{border-left:3px solid var(--qa,var(--brass));transition:transform .25s ease,box-shadow .25s}
 .quote:hover{transform:translateY(-3px)}
-.quote::before{font-size:2.4rem;opacity:.85}
 .quote .chip{color:var(--qa,var(--brass));border-color:currentColor}
 
 /* ---------- medallion headers ---------- */
@@ -563,6 +559,9 @@ html[data-fs="xl"]{font-size:19px}
   <button class="iconbtn" id="infoBtn" aria-label="About and support" onclick="show('about')">
     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="9.2"/><path d="M12 11v5.2M12 7.6v.01"/></svg>
   </button>
+  <button class="iconbtn" id="settingsBtn" aria-label="Settings and statistics" onclick="show('settings')">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09a1.65 1.65 0 0 0 1.51-1 1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"/></svg>
+  </button>
   <button class="iconbtn" id="themeBtn" aria-label="Toggle day / night theme">
     <svg id="thIcon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"><circle cx="12" cy="12" r="4.5"/><path d="M12 2.5v2.4M12 19.1v2.4M2.5 12h2.4M19.1 12h2.4M5 5l1.7 1.7M17.3 17.3 19 19M19 5l-1.7 1.7M6.7 17.3 5 19"/></svg>
   </button>
@@ -625,6 +624,7 @@ const S = {
   fontSize: Store.get('moc_fontSize', 'std'),
   drillDay: Store.get('moc_drillDay', null),
   seen: Store.get('moc_seen', false),
+  notify: Store.get('moc_notify', false),
   xpLog: Store.get('moc_xpLog', {}),
   moduleDates: Store.get('moc_moduleDates', {}),
   reviews: Store.get('moc_reviews', {}),
@@ -640,7 +640,7 @@ function save(){
   Store.set('moc_theme', S.theme); Store.set('moc_moduleDates', S.moduleDates); Store.set('moc_reviews', S.reviews);
   Store.set('moc_simRuns', S.simRuns);
   Store.set('moc_courseDays', S.courseDays); Store.set('moc_courseChecks', S.courseChecks); Store.set('moc_doneCases', S.doneCases);
-  Store.set('moc_notes', S.notes); Store.set('moc_favQuotes', S.favQuotes); Store.set('moc_favPhrases', S.favPhrases); Store.set('moc_fontSize', S.fontSize); Store.set('moc_drillDay', S.drillDay); Store.set('moc_seen', S.seen); Store.set('moc_xpLog', S.xpLog);
+  Store.set('moc_notes', S.notes); Store.set('moc_favQuotes', S.favQuotes); Store.set('moc_favPhrases', S.favPhrases); Store.set('moc_fontSize', S.fontSize); Store.set('moc_drillDay', S.drillDay); Store.set('moc_seen', S.seen); Store.set('moc_xpLog', S.xpLog); Store.set('moc_notify', S.notify);
   Store.set('moc_assess', S.assessDone); Store.set('moc_sims', S.simsDone);
   Store.set('moc_qseen', S.quotesSeen);
 }
@@ -2647,33 +2647,35 @@ function back(view, label){
 /* =====================================================
    VIEWS
    ===================================================== */
+const APP_VERSION = '1.0';
+const APP_URL = 'https://tangojulietdev.github.io/masterofcommand/';
 const VIEWS = {};
 const BIND = {};
 
 /* ---------- voyage track ---------- */
 function voyageHTML(){
-  const W=400, x0=26, x1=374, y=46;
+  const W=400, x0=26, x1=374, y=34;
   const n = RANKS.length;
   const px = i => x0 + (x1-x0)*i/(n-1);
-  // ship interpolated between evenly spaced ports
   let r = 0; while (r < n-1 && S.xp >= RANKS[r+1].xp) r++;
   const frac = r >= n-1 ? 0 : Math.min(1, (S.xp - RANKS[r].xp) / (RANKS[r+1].xp - RANKS[r].xp));
   const shipX = r >= n-1 ? px(n-1) : px(r) + frac*(px(r+1)-px(r));
   const ports = RANKS.map((rk,i)=>{
     const x = px(i), lit = S.xp >= rk.xp, low = i%2===1;
-    const ly = low ? y+30 : y+18;
-    const nm = rk.name.replace(' — Commodore','').split(' ');
+    const ly = low ? y+34 : y+18;          // rank name row (alternating)
+    const xpY = low ? y+46 : y+30;         // xp number sits just under the name
+    const nm = rk.name.replace(' \u00b7 Commodore','').replace(' \u2014 Commodore','').split(' ');
     const lines = nm.length>1 ? `<tspan x="${x}" dy="0">${nm[0]}</tspan><tspan x="${x}" dy="9">${nm.slice(1).join(' ')}</tspan>` : `<tspan x="${x}" dy="0">${nm[0]}</tspan>`;
     return `
     ${low?`<path d="M${x} ${y+7} V${ly-9}" stroke="var(--line-soft)" stroke-width="1"/>`:''}
     <circle cx="${x}" cy="${y}" r="${lit?5:3.6}" fill="${lit?'var(--brass)':'none'}" stroke="${lit?'var(--brass-hi)':'var(--slate-dim)'}" stroke-width="1.3"/>
     ${lit?`<circle cx="${x}" cy="${y}" r="8" fill="none" stroke="var(--brass)" stroke-width=".6" opacity=".45"/>`:''}
     <text class="vport${lit?' lit':''}" x="${x}" y="${ly}" text-anchor="middle">${lines}</text>
-    <text class="vxp" x="${x}" y="${y-12}" text-anchor="middle">${rk.xp}</text>`;
+    <text class="vxp" x="${x}" y="${xpY + (nm.length>1?9:0)}" text-anchor="middle">${rk.xp} XP</text>`;
   }).join('');
   return `<section class="card voyage" style="margin-bottom:14px">
-    <div class="eyebrow">Voyage to Command · ${S.xp} XP</div>
-    <svg viewBox="0 0 ${W} 104" aria-label="Rank progression">
+    <div class="eyebrow">Voyage to Command \u00b7 ${S.xp} XP</div>
+    <svg viewBox="0 0 ${W} 100" aria-label="Rank progression">
       <path d="M${x0} ${y} H${x1}" stroke="var(--line-soft)" stroke-width="2" stroke-dasharray="2 6" stroke-linecap="round"/>
       <path class="route-done" d="M${x0} ${y} H${shipX.toFixed(1)}" stroke="var(--brass)" stroke-width="2" stroke-dasharray="6 8" stroke-linecap="round" opacity=".85"/>
       ${ports}
@@ -3123,18 +3125,14 @@ VIEWS.tools = () => `
     <div class="row" onclick="show('phrases')"><div class="ic">🗣️</div><div class="tx"><b>Leadership Phrasebook</b><span>Word-for-word lines for corrections, refusals, inspections, and hard moments</span></div><span class="chev">›</span></div>
     <div class="row" onclick="show('crew')"><div class="ic">📋</div><div class="tx"><b>Crew Motivation Tracker</b><span>Private morale log: moods, motivators, and watch-outs for your team</span></div><span class="chev">›</span></div>
   </div>
-  <div class="section-head"><h2 style="font-size:1.08rem">App</h2></div>
-  <div class="grid">
-    <div class="row" onclick="show('stats')"><div class="ic">📊</div><div class="tx"><b>My Statistics</b><span>XP history, progress bars, category mastery, collections</span></div><span class="chev">›</span></div>
-    <div class="row" onclick="show('settings')"><div class="ic">⚙️</div><div class="tx"><b>Settings & Backup</b><span>Theme, text size, export and import your progress</span></div><span class="chev">›</span></div>
-  </div>`;
+`;
 
 BIND.settings = () => {
   document.getElementById('expBtn').onclick = () => {
     const data = {app:'master-of-command', v:3, exported:new Date().toISOString(),
       xp:S.xp, doneModules:S.doneModules, doneScenarios:S.doneScenarios, doneChallenges:S.doneChallenges,
       badges:S.badges, crew:S.crew, streak:S.streak, lastVisit:S.lastVisit, assessDone:S.assessDone,
-      simsDone:S.simsDone, quotesSeen:S.quotesSeen, theme:S.theme, moduleDates:S.moduleDates, reviews:S.reviews, simRuns:S.simRuns, courseDays:S.courseDays, courseChecks:S.courseChecks, doneCases:S.doneCases, notes:S.notes, favQuotes:S.favQuotes, favPhrases:S.favPhrases, fontSize:S.fontSize, xpLog:S.xpLog};
+      simsDone:S.simsDone, quotesSeen:S.quotesSeen, theme:S.theme, moduleDates:S.moduleDates, reviews:S.reviews, simRuns:S.simRuns, courseDays:S.courseDays, courseChecks:S.courseChecks, doneCases:S.doneCases, notes:S.notes, favQuotes:S.favQuotes, favPhrases:S.favPhrases, fontSize:S.fontSize, xpLog:S.xpLog, notify:S.notify};
     const a = document.createElement('a');
     a.href = URL.createObjectURL(new Blob([JSON.stringify(data,null,1)], {type:'application/json'}));
     a.download = 'master-of-command-backup-' + new Date().toISOString().slice(0,10) + '.json';
@@ -3150,12 +3148,57 @@ BIND.settings = () => {
         const d = JSON.parse(r.result);
         if (d.app !== 'master-of-command') throw new Error('wrong file');
         ['xp','doneModules','doneScenarios','doneChallenges','badges','crew','streak','lastVisit',
-         'assessDone','simsDone','quotesSeen','theme','moduleDates','reviews','simRuns','courseDays','courseChecks','doneCases','notes','favQuotes','favPhrases','fontSize','xpLog'].forEach(k => { if (d[k] !== undefined) S[k] = d[k]; });
+         'assessDone','simsDone','quotesSeen','theme','moduleDates','reviews','simRuns','courseDays','courseChecks','doneCases','notes','favQuotes','favPhrases','fontSize','xpLog','notify'].forEach(k => { if (d[k] !== undefined) S[k] = d[k]; });
         save(); applyTheme(); checkBadges();
         toast('Backup imported'); show('dash');
       } catch { toast('Not a valid Master of Command backup'); }
     };
     r.readAsText(f);
+  };
+
+  // daily reminder toggle
+  const setNotify = on => { S.notify = on; save(); show('settings'); };
+  const nOn = document.getElementById('notifOn'), nOff = document.getElementById('notifOff');
+  if (nOn) nOn.onclick = async () => {
+    if (!('Notification' in window)) { toast('Reminders are not supported on this device'); return; }
+    let perm = Notification.permission;
+    if (perm !== 'granted') { try { perm = await Notification.requestPermission(); } catch(e){} }
+    if (perm === 'granted') { setNotify(true); scheduleReminder(); toast('Daily reminder on'); }
+    else toast('Allow notifications in your browser settings to enable this');
+  };
+  if (nOff) nOff.onclick = () => { setNotify(false); toast('Reminder off'); };
+
+  // share
+  const shareBtn = document.getElementById('shareBtn');
+  if (shareBtn) shareBtn.onclick = async () => {
+    const payload = { title:'Master of Command', text:'A leadership academy for ship officers. The part of command they never teach at sea school.', url: APP_URL };
+    try {
+      if (navigator.share) { await navigator.share(payload); }
+      else if (navigator.clipboard) { await navigator.clipboard.writeText(APP_URL); toast('Link copied'); }
+      else toast(APP_URL);
+    } catch(e) { /* user cancelled */ }
+  };
+
+  // rate
+  const rateBtn = document.getElementById('rateBtn');
+  if (rateBtn) rateBtn.onclick = () => {
+    // Play Store listing once live; falls back to the web link for now.
+    window.open(APP_URL, '_blank');
+    toast('Thank you. Your review helps other officers find it.');
+  };
+
+  // reset
+  const resetBtn = document.getElementById('resetBtn');
+  if (resetBtn) resetBtn.onclick = () => {
+    if (resetBtn.dataset.armed) {
+      try { Object.keys(localStorage).filter(k=>k.indexOf('moc_')===0).forEach(k=>localStorage.removeItem(k)); } catch(e){}
+      location.reload();
+    } else {
+      resetBtn.dataset.armed = '1';
+      resetBtn.textContent = 'Tap again to confirm reset';
+      toast('This cannot be undone. Tap again to confirm.');
+      setTimeout(()=>{ if(resetBtn){ resetBtn.dataset.armed=''; resetBtn.textContent='Reset all progress'; } }, 4000);
+    }
   };
 };
 
@@ -3671,8 +3714,11 @@ BIND.drill = () => {
 };
 
 /* ---------- SETTINGS ---------- */
-VIEWS.settings = () => `${back('tools','Tools')}
+VIEWS.settings = () => `${back('dash','Back')}
   <div class="section-head"><h2>Settings</h2></div>
+  <div class="grid" style="margin-bottom:14px">
+    <div class="row" onclick="show('stats')"><div class="ic">📊</div><div class="tx"><b>My Statistics</b><span>XP history, progress bars, category mastery, collections</span></div><span class="chev">›</span></div>
+  </div>
   <div class="card" style="margin-bottom:12px">
     <div class="eyebrow">Theme</div>
     <div class="chiprow" style="margin-top:10px">
@@ -3689,6 +3735,22 @@ VIEWS.settings = () => `${back('tools','Tools')}
       <button class="chip ${S.fontSize==='xl'?'on':''}" onclick="S.fontSize='xl';save();applyTheme();show('settings')">Extra large</button>
     </div>
   </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="eyebrow">Daily reminder</div>
+    <p class="muted small" style="margin:6px 0 10px">Get a gentle nudge once a day to keep your streak and do the daily challenge. Works best on Android; on some phones reminders are limited by the system.</p>
+    <div class="chiprow">
+      <button class="chip ${S.notify?'on':''}" id="notifOn">Reminder on</button>
+      <button class="chip ${!S.notify?'on':''}" id="notifOff">Off</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:12px">
+    <div class="eyebrow">Spread the word</div>
+    <p class="muted small" style="margin:6px 0 12px">If this helps you, it will help the officer beside you too.</p>
+    <div style="display:flex;gap:10px;flex-wrap:wrap">
+      <button class="btn" id="shareBtn">Share the app</button>
+      <button class="btn ghost" id="rateBtn">Rate this app</button>
+    </div>
+  </div>
   <div class="card">
     <div class="eyebrow">Backup</div>
     <p class="muted small" style="margin:6px 0 12px">Progress, notes, and saved lines live on this device. Export before clearing the browser or switching devices.</p>
@@ -3697,7 +3759,13 @@ VIEWS.settings = () => `${back('tools','Tools')}
       <button class="btn ghost" id="impBtn">Import backup</button>
       <input type="file" id="impFile" accept="application/json" style="display:none">
     </div>
-  </div>`;
+  </div>
+  <div class="card" style="margin-top:12px;border-color:rgba(217,106,106,.3)">
+    <div class="eyebrow" style="color:var(--tension)">Danger zone</div>
+    <p class="muted small" style="margin:6px 0 12px">Reset wipes all XP, ranks, badges, notes and progress on this device. Export a backup first if you might want it back.</p>
+    <button class="btn ghost" id="resetBtn" style="border-color:rgba(217,106,106,.5);color:#E89B9B">Reset all progress</button>
+  </div>
+  <p class="muted small" style="text-align:center;margin-top:18px;opacity:.7">Master of Command · version ${APP_VERSION}</p>`;
 
 /* ---------- WELCOME ---------- */
 
@@ -3766,21 +3834,23 @@ VIEWS.about = () => `${back('dash','Back')}
     <p class="muted" style="margin-top:4px">Maritime Leadership Academy</p>
   </section>
   <div class="card" style="margin-bottom:12px">
-    <div class="eyebrow">Built by</div>
-    <p style="margin-top:8px;font-size:1.02rem"><b style="font-family:'Marcellus',serif;color:var(--brass-hi)">tangojulietdev</b></p>
+    <div class="eyebrow">About this app</div>
+    <p class="muted small" style="margin-top:8px;line-height:1.6">Master of Command is a leadership academy for ship officers: the part of command they never teach at sea school. Its lessons are drawn from the great books on power, persuasion and human behaviour, and from the hard-won experience of serving Masters and Chief Officers who helped shape every module. Everything is written in clear, simple English for mixed-nationality crews.</p>
+    <p class="muted small" style="margin-top:10px">Drawn from works such as <i>The 48 Laws of Power</i> and <i>The Laws of Human Nature</i> by Robert Greene, <i>How to Win Friends and Influence People</i> by Dale Carnegie, <i>Never Split the Difference</i> by Chris Voss, <i>Extreme Ownership</i> by Jocko Willink, and others, all rewritten in our own words for the deck.</p>
+    <p class="muted small" style="margin-top:10px">20 modules · 36 scenarios · 10 case files · 9 simulators · 48 laws · 30-day course. All your progress stays on this device. Nothing is collected or sent anywhere.</p>
+  </div>
+  <div class="callout gold" style="margin-bottom:12px">
+    <div class="ctitle">⚠️ Use these powers responsibly</div>
+    Everything in here is meant to build better officers and better crews. Use it to lead people well, to defuse conflict, to stay fair under pressure, and to recognise manipulation when it is aimed at you. One test never fails: if a move only works while the other person does not understand it, it is manipulation, not leadership. And on a ship, anything used the wrong way always comes back, usually at 0300, with interest. Lead people up, never around them.
   </div>
   <div class="card" style="margin-bottom:12px">
     <div class="eyebrow">Enquiry · Support · Feedback</div>
     <p class="muted small" style="margin:8px 0 12px">Found a problem, have an idea, or want a feature? One email reaches the builder directly.</p>
-    <a class="btn primary" style="text-decoration:none;display:inline-flex" href="mailto:tangojulietdev@gmail.com?subject=Master%20of%20Command%20—%20Feedback">✉️&nbsp; tangojulietdev@gmail.com</a>
+    <a class="btn primary" style="text-decoration:none;display:inline-flex" href="mailto:tangojulietdev@gmail.com?subject=Master%20of%20Command%20Feedback">✉️&nbsp; tangojulietdev@gmail.com</a>
   </div>
-  <div class="card" style="margin-bottom:12px">
-    <div class="eyebrow">About this app</div>
-    <p class="muted small" style="margin-top:8px">20 modules · 36 scenarios · 5 case files · 9 simulators · 48 laws · 30-day course — written in clear English for mixed-nationality crews. All progress stays on your device; nothing is collected or sent anywhere.</p>
-  </div>
-  <div class="callout gold">
-    <div class="ctitle">⚠️ Use these powers responsibly</div>
-    This app teaches influence, persuasion, and the 48 Laws of Power. They are for building better crews — <b>not</b> for running mind games on your messman, out-maneuvering the Second Engineer for the last piece of chicken, or deploying Law 31 to win the smoke-room TV remote. If you catch yourself using "tactical empathy" on the cook to get a bigger portion, put the phone down and go do a deck round. Mind tricks played on shipmates always come back — usually at 0300, with interest. Lead people <b>up</b>, never around.
+  <div class="card">
+    <div class="eyebrow">Built by</div>
+    <p style="margin-top:8px;font-size:1.02rem"><b style="font-family:'Marcellus',serif;color:var(--brass-hi)">tangojulietdev</b></p>
   </div>`;
 
 /* =====================================================
@@ -3824,6 +3894,19 @@ sInput.addEventListener('input', () => {
    INIT
    ===================================================== */
 ['convo','nego','psc','crisis'].forEach(k=>{ if(S.simsDone.includes(k) && !(S.simRuns[k]||[]).length){ S.simRuns[k]=[0]; } });
+function scheduleReminder(){
+  if (!S.notify || !('Notification' in window) || Notification.permission!=='granted') return;
+  // lightweight in-session reminder: fires if the app is left open across the day boundary.
+  // (A PWA cannot guarantee background notifications without push infrastructure.)
+  const now = new Date();
+  const next = new Date(now); next.setHours(19,0,0,0); // 1900 local
+  if (next <= now) next.setDate(next.getDate()+1);
+  const ms = next - now;
+  if (ms < 12*60*60*1000) { // only set if within 12h, avoids huge timers
+    setTimeout(()=>{ try { new Notification('Master of Command', { body:"Today's command challenge is waiting. Keep your streak going." }); } catch(e){} }, ms);
+  }
+}
+if (S.notify) scheduleReminder();
 applyTheme();
 checkBadges();
 show('dash');
