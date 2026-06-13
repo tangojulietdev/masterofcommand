@@ -200,6 +200,8 @@ main{flex:1;min-width:0;padding:18px 16px calc(var(--nav-h) + 28px);max-width:98
 .stripe.half{background:linear-gradient(90deg,#C8A24E 50%,rgba(141,161,188,.18) 50%)}
 @keyframes glint{0%,70%{transform:translateX(-120%)}85%,100%{transform:translateX(120%)}}
 .stripes.sm .stripe{width:20px;height:4px}
+.insignia{display:inline-flex;align-items:center}
+.insignia svg{display:block}
 
 /* ---------- hero ---------- */
 .hero{
@@ -2603,9 +2605,26 @@ window.goBack = goBack;
 
 /* ---------- shared snippets ---------- */
 function stripesHTML(n, sm){
-  let h = `<div class="stripes${sm?' sm':''}" aria-label="${n} rank stripes">`;
-  for (let i=0;i<4;i++) h += `<span class="stripe${i<n?' lit':''}"></span>`;
-  return h + `</div>`;
+  // n = number of lit stripes (0-4). Diamond lights only at Master Mariner (handled via 5th level).
+  // We derive rank level from XP for the diamond, but keep n for stripes.
+  const litStripes = Math.max(0, Math.min(4, n));
+  const diamondLit = rankFor(S.xp).name.indexOf('Master Mariner') === 0;
+  const sc = sm ? 0.72 : 1;
+  const sw = Math.round(150*sc), sh = Math.round(58*sc);
+  const stripeFill = i => i < litStripes ? 'url(#rankGold)' : 'rgba(141,161,188,.22)';
+  const xs = [40,54,68,82];
+  const stripes = xs.map((x,i)=>`<rect x="${x}" y="14" width="8" height="40" rx="2.5" fill="${stripeFill(i)}"/>`).join('');
+  const dStroke = diamondLit ? 'url(#rankGold)' : 'rgba(141,161,188,.22)';
+  return `<div class="insignia${sm?' sm':''}" aria-label="${RANKS[Math.min(litStripes + (diamondLit?1:0), RANKS.length-1)]?RANKS[litStripes].name:''} insignia">
+    <svg width="${sw}" height="${sh}" viewBox="0 0 150 58" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <defs><linearGradient id="rankGold" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#F4E3A8"/><stop offset=".5" stop-color="#E8C97D"/>
+        <stop offset=".5" stop-color="#C8A24E"/><stop offset="1" stop-color="#9C7A2E"/>
+      </linearGradient></defs>
+      ${stripes}
+      <rect x="102" y="22" width="22" height="22" rx="2.5" transform="rotate(45 113 33)" fill="none" stroke="${dStroke}" stroke-width="8" stroke-linejoin="round"/>
+    </svg>
+  </div>`;
 }
 function ringHTML(score){
   const r=50, c=2*Math.PI*r, off=c*(1-score/100);
