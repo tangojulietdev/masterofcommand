@@ -117,6 +117,10 @@ main{flex:1;min-width:0;padding:18px 16px calc(var(--nav-h) + 28px);max-width:98
 }
 .bnav button svg{width:21px;height:21px}
 .bnav button.active{color:var(--brass-hi)}
+.bnav button.navpower svg{width:25px;height:25px}
+.bnav button.navpower{color:#CB7A6E}
+.bnav button.navpower.active{color:#D98E5F}
+.rail button.navpower{color:#CB7A6E}
 .bnav button:focus-visible{outline:2px solid var(--brass);outline-offset:2px}
 
 @media(min-width:960px){
@@ -550,6 +554,28 @@ html[data-fs="xl"]{font-size:19px}
 .lawnav .btn{flex:1;justify-content:center}
 .lawcount{flex:none;color:var(--brass);font-size:.85rem;min-width:64px;text-align:center}
 .lawpager{touch-action:pan-y}
+
+/* ---------- hero tiles (laws + case files) ---------- */
+.law-hero,.casehero{position:relative;overflow:hidden;border:1px solid var(--line);
+  background:linear-gradient(150deg,rgba(200,162,78,.16),rgba(13,22,40,.6));
+  transition:transform .25s,box-shadow .25s,border-color .25s}
+.law-hero:hover,.casehero:hover{transform:translateY(-3px);box-shadow:0 16px 40px rgba(2,8,20,.4);border-color:var(--brass)}
+.casehero{background:linear-gradient(150deg,rgba(217,106,106,.14),rgba(13,22,40,.65))}
+.law-hero-bg,.casehero-bg{position:absolute;right:-14px;top:50%;transform:translateY(-50%);
+  width:128px;height:128px;opacity:.13;color:var(--brass);pointer-events:none}
+.casehero-bg{color:var(--tension);opacity:.16}
+.law-hero-bg svg,.casehero-bg svg{width:100%;height:100%}
+.law-hero-in,.casehero-in{position:relative;z-index:1}
+.law-hero-cta,.casehero-cta{display:inline-block;margin-top:12px;font-family:'IBM Plex Mono',monospace;
+  font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--brass-hi)}
+.casehero-cta{color:var(--tension)}
+
+/* ---------- 30-day course ---------- */
+.course-hero{background:linear-gradient(150deg,rgba(200,162,78,.16),rgba(13,22,40,.6));border:1px solid var(--line);text-align:center}
+.course-hero .bar{max-width:340px;margin:0 auto}
+.courseday-row.cur{border-color:var(--line);background:rgba(200,162,78,.06)}
+.hero.compact{padding-bottom:18px;margin-bottom:22px}
+.hero.compact h1{margin-bottom:10px}
 </style>
 </head>
 <body>
@@ -2330,37 +2356,46 @@ const SIM_SETS = {
 
 /* ============ 30-DAY COMMAND COURSE ============ */
 const COURSE = [
- {t:"Presence", tasks:[{k:"module",id:"command-presence",l:"Module I — Command Presence"},{k:"scen",i:0,l:"Scenario: Bosun refuses your instruction"}]},
- {t:"Authority", tasks:[{k:"module",id:"authority-vs-fear",l:"Module II — Authority vs Fear"},{k:"scen",i:1,l:"Scenario: Third Officer questions your cargo plan"},{k:"chal",l:"Complete today's command challenge",m:1}]},
- {t:"Respect", tasks:[{k:"module",id:"psych-respect",l:"Module III — The Psychology of Respect"},{k:"scen",i:2,l:"Scenario: AB appeals past you to the Master"}]},
- {t:"Sources of Power", tasks:[{k:"read",view:"power",l:"Read: all six sources of power",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
- {t:"Motivation", tasks:[{k:"module",id:"crew-motivation",l:"Module IV — Crew Motivation"},{k:"tool",id:"crew",l:"Start your Crew Motivation Tracker — add 3 men",m:1}]},
- {t:"Influence", tasks:[{k:"module",id:"influence-without-orders",l:"Module V — Influencing Without Orders"},{k:"scen",i:6,l:"Scenario: Foreman demands a dangerous loading change"}]},
- {t:"First Review", tasks:[{k:"review",l:"Clear your review deck"},{k:"tool",id:"team",l:"Run the Crew Climate Check"}]},
- {t:"Human Nature", tasks:[{k:"module",id:"human-nature",l:"Module VI — Human Nature & Behavior"},{k:"tool",id:"pers",l:"Run the Personality Analyzer on one crew member"}]},
- {t:"Conflict Basics", tasks:[{k:"module",id:"conflict-resolution",l:"Module VII — Conflict Resolution"},{k:"read",view:"conflict",l:"Read: the frameworks and the 7 scripts",m:1}]},
- {t:"Crew Conflict", tasks:[{k:"scen",i:3,l:"Scenario: Two national groups in tension"},{k:"scen",i:4,l:"Scenario: Bosun and Pumpman stop speaking"}]},
- {t:"Difficult People", tasks:[{k:"module",id:"difficult-crew",l:"Module VIII — Managing Difficult Personalities"},{k:"sim",key:"convo",i:0,l:"Simulator: The Bosun and the PPE habit"}]},
- {t:"Performance", tasks:[{k:"module",id:"lazy-crew",l:"Module IX — Underperformance & Laziness"},{k:"scen",i:18,l:"Scenario: Your best AB collapses mid-contract"}]},
- {t:"Toxicity", tasks:[{k:"module",id:"toxic-crew",l:"Module X — Handling Toxic Crew Members"},{k:"scen",i:5,l:"Scenario: The bullied cadet who says he is fine"}]},
- {t:"Hard Conversations", tasks:[{k:"review",l:"Clear your review deck"},{k:"sim",key:"convo",i:1,l:"Simulator: Alcohol on duty"}]},
- {t:"Negotiation", tasks:[{k:"module",id:"negotiation",l:"Module XI — Negotiation Skills"},{k:"sim",key:"nego",i:0,l:"Simulator: The terminal ballast push"}]},
- {t:"Commercial Pressure", tasks:[{k:"scen",i:12,l:"Scenario: Charterer pushes you into heavy weather"},{k:"scen",i:13,l:"Scenario: Agent wants clean receipts for short cargo"}]},
- {t:"The Laws I", tasks:[{k:"read",view:"laws",l:"Read: Laws 1–16",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
- {t:"Inspections", tasks:[{k:"module",id:"inspection-leadership",l:"Module XII — Inspection & Audit Leadership"},{k:"sim",key:"psc",i:0,l:"Simulator: The hostile PSC officer"}]},
- {t:"Inspection Scenarios", tasks:[{k:"scen",i:9,l:"Scenario: PSC officer threatens detention"},{k:"scen",i:10,l:"Scenario: Your AB fails the inspector's question"}]},
- {t:"Records & Integrity", tasks:[{k:"sim",key:"psc",i:1,l:"Simulator: The vetting rest-hour cross-check"},{k:"scen",i:11,l:"Scenario: Master wants records backdated"}]},
- {t:"The Laws II", tasks:[{k:"review",l:"Clear your review deck"},{k:"read",view:"laws",l:"Read: Laws 17–32",m:1}]},
- {t:"Crisis Command", tasks:[{k:"module",id:"crisis-leadership",l:"Module XIII — Crisis Leadership"},{k:"sim",key:"crisis",i:0,l:"Simulator: Smoke in the paint locker"}]},
- {t:"Decisions", tasks:[{k:"module",id:"emergency-decisions",l:"Module XIV — Decision-Making Under Pressure"},{k:"scen",i:26,l:"Scenario: Blackout in a narrow channel"}]},
- {t:"Emergency Drills", tasks:[{k:"sim",key:"crisis",i:1,l:"Simulator: Mooring injury forward"},{k:"scen",i:25,l:"Scenario: Man overboard at stations"}]},
- {t:"Culture", tasks:[{k:"module",id:"multicultural",l:"Module XV — Multicultural Crew Management"},{k:"scen",i:24,l:"Scenario: Fire party freezes"}]},
- {t:"Emotional Command", tasks:[{k:"module",id:"eq",l:"Module XVI — Emotional Intelligence at Sea"},{k:"scen",i:28,l:"Scenario: Devastating news from home"}]},
- {t:"Ship Politics", tasks:[{k:"module",id:"political-dynamics",l:"Module XVII — Political Dynamics Onboard"},{k:"scen",i:34,l:"Scenario: You disagree with the Master's anchorage"}]},
- {t:"Communication", tasks:[{k:"module",id:"communication",l:"Module XVIII — Communication Mastery"},{k:"read",view:"phrases",l:"Read: the Leadership Phrasebook",m:1}]},
- {t:"Persuasion & The Laws III", tasks:[{k:"module",id:"persuasion",l:"Module XIX — Persuasion Techniques"},{k:"read",view:"laws",l:"Read: Laws 33–48",m:1}]},
- {t:"Graduation", tasks:[{k:"module",id:"high-performance-teams",l:"Module XX — High-Performance Teams"},{k:"tool",id:"assess",l:"Take the Leadership Assessment"},{k:"sim",key:"nego",i:1,l:"Simulator: The drydock budget cut"}]}
+ {t:"Presence", f:"Command starts with how you show up, before you say a word. Today is about presence: being the calmest, most prepared person on deck. Learn it, then handle your first hard moment, a senior man who will not do as asked.", th:"The crew decides if they believe you in the first ten seconds. Make those seconds count.", tasks:[{k:"module",id:"command-presence",l:"Module I — Command Presence"},{k:"scen",i:0,l:"Scenario: Bosun refuses your instruction"}]},
+ {t:"Authority", f:"Fear gets fast obedience and slow betrayal. Respect gets a crew that holds the standard when you are asleep. Today you learn the difference, and practise being challenged without losing your footing.", th:"Anyone can be obeyed. Few are trusted. Aim for trusted.", tasks:[{k:"module",id:"authority-vs-fear",l:"Module II — Authority vs Fear"},{k:"scen",i:1,l:"Scenario: Third Officer questions your cargo plan"},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Respect", f:"Respect is not a mood, it follows rules you can learn. Today: how it is earned, how it is lost, and what to do when a man goes over your head to the Master.", th:"Respect is built in small deposits and lost in one withdrawal.", tasks:[{k:"module",id:"psych-respect",l:"Module III — The Psychology of Respect"},{k:"scen",i:2,l:"Scenario: AB appeals past you to the Master"}]},
+ {t:"Sources of Power", f:"Rank is only one kind of power, and the weakest to lean on alone. Today you meet all six sources and learn which to reach for, and which quietly costs you the crew.", th:"The officer who only has rank has almost nothing.", tasks:[{k:"read",view:"power",l:"Read: all six sources of power",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Motivation", f:"Pay gets a man to sign. It does not get him to care. Today is about what actually moves a tired crew long after the money stopped being the reason.", th:"Salary buys attendance. Purpose buys effort.", tasks:[{k:"module",id:"crew-motivation",l:"Module IV — Crew Motivation"},{k:"tool",id:"crew",l:"Start your Crew Motivation Tracker — add 3 men",m:1}]},
+ {t:"Influence", f:"The best officers get things done without giving orders. Today: how to lead through influence, so the plan becomes the crew's idea, not just your instruction.", th:"An order pushed is resisted. An idea owned is driven.", tasks:[{k:"module",id:"influence-without-orders",l:"Module V — Influencing Without Orders"},{k:"scen",i:6,l:"Scenario: Foreman demands a dangerous loading change"}]},
+ {t:"First Review", f:"First week done. Today you consolidate: clear your review deck and take an honest reading of your crew's climate. No new theory, just lock in what you have learned.", th:"Knowledge you do not revisit is knowledge you will lose.", tasks:[{k:"review",l:"Clear your review deck"},{k:"tool",id:"team",l:"Run the Crew Climate Check"}]},
+ {t:"Human Nature", f:"People at sea want, fear, and hide predictable things. Today is the operating manual nobody hands you: reading human nature, and reading one real crew member through it.", th:"You cannot lead a man you have not bothered to understand.", tasks:[{k:"module",id:"human-nature",l:"Module VI — Human Nature & Behavior"},{k:"tool",id:"pers",l:"Run the Personality Analyzer on one crew member"}]},
+ {t:"Conflict Basics", f:"Conflict is cheapest to solve at the grumble stage, before it hardens. Today: the frameworks, and the difference between what a man demands and what he actually needs.", th:"Every feud was once a small thing somebody ignored.", tasks:[{k:"module",id:"conflict-resolution",l:"Module VII — Conflict Resolution"},{k:"read",view:"conflict",l:"Read: the frameworks and the 7 scripts",m:1}]},
+ {t:"Crew Conflict", f:"Now you apply it. Two real frictions: national groups pulling apart, and two key men who have stopped speaking. Handle the people, not just the problem.", th:"A silent crew is not a calm crew. It is a loaded one.", tasks:[{k:"scen",i:3,l:"Scenario: Two national groups in tension"},{k:"scen",i:4,l:"Scenario: Bosun and Pumpman stop speaking"}]},
+ {t:"Difficult People", f:"Some people are just hard work. Today: the sea-lawyer, the silent resister, the prima donna, what each needs, and your first live difficult conversation.", th:"Difficult people are usually frightened people in armour.", tasks:[{k:"module",id:"difficult-crew",l:"Module VIII — Managing Difficult Personalities"},{k:"sim",key:"convo",i:0,l:"Simulator: The Bosun and the PPE habit"}]},
+ {t:"Performance", f:"Before you call a man lazy, check your own order was clear. Today separates cannot from will not, and you face a strong hand whose performance suddenly collapsed.", th:"Tolerating one slacker quietly punishes your best men.", tasks:[{k:"module",id:"lazy-crew",l:"Module IX — Underperformance & Laziness"},{k:"scen",i:18,l:"Scenario: Your best AB collapses mid-contract"}]},
+ {t:"Toxicity", f:"Toxic is different from difficult. It spreads. Today: how to spot it, contain it, and protect a bullied junior who insists he is fine.", th:"One toxic man unchecked rewrites the whole crew's rules.", tasks:[{k:"module",id:"toxic-crew",l:"Module X — Handling Toxic Crew Members"},{k:"scen",i:5,l:"Scenario: The bullied cadet who says he is fine"}]},
+ {t:"Hard Conversations", f:"The hardest words of command. Today you run the alcohol-on-duty simulator and learn to be firm and humane in the same breath, the standard held without crushing the man.", th:"Say the hard thing kindly, but say it.", tasks:[{k:"review",l:"Clear your review deck"},{k:"sim",key:"convo",i:1,l:"Simulator: Alcohol on duty"}]},
+ {t:"Negotiation", f:"You will be pushed, by terminals, agents, the office. Today: negotiation that holds your limits without burning the relationship, starting with the ballast push.", th:"The most profitable word in any deal is a calm, conditional 'if'.", tasks:[{k:"module",id:"negotiation",l:"Module XI — Negotiation Skills"},{k:"sim",key:"nego",i:0,l:"Simulator: The terminal ballast push"}]},
+ {t:"Commercial Pressure", f:"Commercial pressure is loudest exactly when safety matters most. Today: the charterer pushing you into weather, and the agent who wants clean receipts for short cargo.", th:"No laycan, no berth, no bonus is worth a wreck.", tasks:[{k:"scen",i:12,l:"Scenario: Charterer pushes you into heavy weather"},{k:"scen",i:13,l:"Scenario: Agent wants clean receipts for short cargo"}]},
+ {t:"The Laws I", f:"The first sixteen Laws of Power, read for the deck. Today you study how power really behaves, so you can use it cleanly and spot it used on you.", th:"Power read in daylight is leadership. Power in the dark is manipulation.", tasks:[{k:"read",view:"laws",l:"Read: Laws 1–16",m:1},{k:"chal",l:"Complete today's command challenge",m:1}]},
+ {t:"Inspections", f:"An inspection starts at the gangway, not the opening meeting. Today: leading an audit, and the hostile PSC officer who arrives looking for a fight.", th:"The inspector reads the officers more than the steel.", tasks:[{k:"module",id:"inspection-leadership",l:"Module XII — Inspection & Audit Leadership"},{k:"sim",key:"psc",i:0,l:"Simulator: The hostile PSC officer"}]},
+ {t:"Inspection Scenarios", f:"Now the scenarios that test it: the detention threat, and the crewman who freezes on the inspector's question. Own the gap, protect the man, show the system.", th:"Never punish a man in front of the person who scared him.", tasks:[{k:"scen",i:9,l:"Scenario: PSC officer threatens detention"},{k:"scen",i:10,l:"Scenario: Your AB fails the inspector's question"}]},
+ {t:"Records & Integrity", f:"Records are the ship's testimony, and they must never lie. Today: the vetting rest-hour cross-check, and a Master who wants figures backdated.", th:"Sign only what the ship actually measured.", tasks:[{k:"sim",key:"psc",i:1,l:"Simulator: The vetting rest-hour cross-check"},{k:"scen",i:11,l:"Scenario: Master wants records backdated"}]},
+ {t:"The Laws II", f:"Laws 17 to 32, the middle third. Heavier ground: timing, reputation, knowing your ground. Read it, then clear your review deck to lock the week in.", th:"Master timing and you rarely need force.", tasks:[{k:"review",l:"Clear your review deck"},{k:"read",view:"laws",l:"Read: Laws 17–32",m:1}]},
+ {t:"Crisis Command", f:"When it goes wrong, command yourself first. Today: crisis leadership, and the paint-locker fire simulator, frozen crew, the CO2 call, the long night after.", th:"In an emergency the first thing you command is your own breathing.", tasks:[{k:"module",id:"crisis-leadership",l:"Module XIII — Crisis Leadership"},{k:"sim",key:"crisis",i:0,l:"Simulator: Smoke in the paint locker"}]},
+ {t:"Decisions", f:"Pressure narrows the mind. Today: deciding well when you are tired and the clock is running, and a blackout in a narrow channel with seconds to act.", th:"A good decision made now beats a perfect one made too late.", tasks:[{k:"module",id:"emergency-decisions",l:"Module XIV — Decision-Making Under Pressure"},{k:"scen",i:26,l:"Scenario: Blackout in a narrow channel"}]},
+ {t:"Emergency Drills", f:"Drills are where the next emergency is won or lost. Today: a mooring injury forward, snap-back zones, bleeding control, and protecting a shaken team.", th:"Secure the danger before you run to the casualty.", tasks:[{k:"sim",key:"crisis",i:1,l:"Simulator: Mooring injury forward"},{k:"scen",i:25,l:"Scenario: Man overboard at stations"}]},
+ {t:"Culture", f:"Twenty nationalities, one standard. Today: leading a multicultural crew, and a fire party that freezes because nobody felt safe to speak up.", th:"A 'yes' you did not verify is not a yes.", tasks:[{k:"module",id:"multicultural",l:"Module XV — Multicultural Crew Management"},{k:"scen",i:24,l:"Scenario: Fire party freezes"}]},
+ {t:"Emotional Command", f:"Command is emotional work. Today: managing your own reactions and reading others', and an officer carrying devastating news from home.", th:"Your mood on deck is an order you did not mean to give.", tasks:[{k:"module",id:"eq",l:"Module XVI — Emotional Intelligence at Sea"},{k:"scen",i:28,l:"Scenario: Devastating news from home"}]},
+ {t:"Ship Politics", f:"Every ship has a real chart of influence under the official one. Today: reading the politics, and disagreeing with the Master's anchorage the right way.", th:"Correct the Master in private, frame it as protecting him.", tasks:[{k:"module",id:"political-dynamics",l:"Module XVII — Political Dynamics Onboard"},{k:"scen",i:34,l:"Scenario: You disagree with the Master's anchorage"}]},
+ {t:"Communication", f:"The message is not what you said, it is what they understood and did. Today: communication that survives fatigue and language, plus the phrasebook for hard moments.", th:"Do not ask 'all clear?'. Ask them to walk you through it.", tasks:[{k:"module",id:"communication",l:"Module XVIII — Communication Mastery"},{k:"read",view:"phrases",l:"Read: the Leadership Phrasebook",m:1}]},
+ {t:"Persuasion & The Laws III", f:"The final third of the Laws, and the art of persuasion. Today you finish all 48 and learn to make commitment stick, peer to peer.", th:"People defend hardest the ideas they believe are their own.", tasks:[{k:"module",id:"persuasion",l:"Module XIX — Persuasion Techniques"},{k:"read",view:"laws",l:"Read: Laws 33–48",m:1}]},
+ {t:"Graduation", f:"The last day. Bring it together: the high-performance team module, your leadership assessment, and one final negotiation. Then you graduate, and the real command begins.", th:"The ship was always the easy part. Today you finish learning the rest.", tasks:[{k:"module",id:"high-performance-teams",l:"Module XX — High-Performance Teams"},{k:"tool",id:"assess",l:"Take the Leadership Assessment"},{k:"sim",key:"nego",i:1,l:"Simulator: The drydock budget cut"}]}
+
 ];
+const COURSE_WEEKS = [
+  {n:1, t:'The Foundation of Command', range:[0,6], d:'Presence, authority, respect, power and motivation. The ground everything else stands on.'},
+  {n:2, t:'People & Influence', range:[7,15], d:'Human nature, conflict, difficult people, performance and the first hard conversations.'},
+  {n:3, t:'Pressure, Inspections & Crisis', range:[16,23], d:'Negotiation, audits, records, crisis command and decisions under fire.'},
+  {n:4, t:'Mastery, Culture & Politics', range:[24,29], d:'Multicultural crews, emotional command, ship politics, communication and graduation.'}
+];
+function weekFor(d){ return COURSE_WEEKS.find(w=> d>=w.range[0] && d<=w.range[1]); }
+
 
 /* ============ CASE FILES ============ */
 const CASES = [
@@ -2490,6 +2525,24 @@ const QUIZZES = {
   {q:"'Train the next man down' creates:",o:["Threats to your position","A crew one promotion deep — crises become inconveniences","Confusion about authority","Extra paperwork"],a:1}]
 };
 
+const CODE = [
+{n:1,t:"Eat Last",law:"Your crew is fed, rested, and safe before you are.",why:"People give everything to a leader they believe puts them first. The officer who takes the best cabin, the first meal, the easy watch, and the credit teaches the crew that the ship exists to serve him. The one who eats last earns a loyalty no rank can command.",ship:"When the work runs late, you are the last off deck, not the first. When rest hours are short, yours go first. When the recognition comes, you hand it down. The crew counts these things, silently, and they decide how hard they will work for you when it matters.",cost:"Take care of yourself first and the crew will take care of themselves first too, exactly when you need them to think of the ship. A leader who feeds himself first commands bodies, never hearts."},
+{n:2,t:"Own Everything",law:"Every failure in your department is yours. Every success belongs to your people.",why:"There is no such thing as a bad crew, only a bad leader, is hard medicine, but crews can feel who believes it. The officer who blames his men for his own unclear orders loses them. The one who says 'that was my failure, here is my fix' gains an authority that blame can never buy.",ship:"The job went wrong because your brief was vague? Say so. The inspection found a gap on your deck? It is yours, whoever physically missed it. And when the deck performs, you point at them, not yourself. Ownership upward, credit downward.",cost:"Blame travels downhill and so does resentment. The officer who sheds responsibility onto his crew builds a department that hides problems from him, because they have learned that honesty gets punished and only the messenger gets blamed."},
+{n:3,t:"Be the Calm",law:"In the worst moment, you are the steadiest person on the ship.",why:"Fear and panic are contagious, and so is composure. The crew takes its emotional temperature from the officer in charge. If you are steady, the deck steadies. If you rush, shout, or show fear, it spreads faster than any fire.",ship:"Smoke in the engine room, a man down, a blackout in a channel. Your lowered voice and unhurried orders do more than any drill. The first thing you command in any emergency is not the fire party, it is your own breathing.",cost:"An officer who loses his composure in a crisis forfeits command of it. The crew stops listening to the panicked voice and starts acting on instinct, which is exactly when people get hurt and good ships are lost."},
+{n:4,t:"Correct in Private, Praise in Public",law:"Discipline behind a closed door. Recognition in front of everyone.",why:"A man corrected in front of his shipmates remembers the humiliation, not the lesson. A man praised in front of them stands taller for a month. Where you choose to deliver each shapes whether you build pride or resentment.",ship:"The Bosun got it wrong? 'Walk with me a moment,' then handle it off the deck. The young AB caught a problem before it grew? Name him at the safety meeting. The crew learns that you protect their dignity even when you correct them.",cost:"Correct a man publicly and you do not just lose him, you teach the whole crew that you cannot be trusted with their pride. They will stop bringing you problems, stop taking initiative, and do the minimum that cannot be punished."},
+{n:5,t:"Say What You Mean",law:"Your word is exact, and it is reliable. Once given, it holds.",why:"A crew runs on the predictability of the officer's word. If 'yes' sometimes means no, if promises drift, if instructions shift with your mood, men stop trusting anything you say and start managing around you instead of working with you.",ship:"If you say the watch changes at 0400, it changes at 0400. If you promise to take a problem to the Master, you take it. If you commit to a man's leave, you fight for it. Small kept words build a reputation that does your work for you.",cost:"Break your word in small things and no one believes you in large ones. The officer whose promises are soft finds that in a real emergency, when seconds count, the crew hesitates, because they are not sure he means what he just ordered."},
+{n:6,t:"Know the Work",law:"You can do, or clearly understand, every job you command.",why:"Authority without competence is a bluff, and crews call it fast. Respect at sea is earned first by knowing the job. The officer who understands the deck, the gear, and the dangers leads from knowledge; the one who does not leads from a title alone, and everyone can tell.",ship:"You do not need to be the best at every task, but you must understand each one well enough to judge it, to spot the unsafe shortcut, to know when a man is telling you it cannot be done versus will not. Walk the deck. Learn the gear. Ask the old hands.",cost:"An officer who does not know the work cannot tell good work from bad, safe from unsafe, or honest from lazy. The crew quietly takes control of the things he does not understand, and one day one of those things hurts someone."},
+{n:7,t:"Protect Your People",law:"You stand between your crew and unfair pressure from above or ashore.",why:"Loyalty flows up only when it has first flowed down. The officer who shields his crew from unreasonable demands, who takes the heat from the office so they can do the job, earns men who will go through a wall for him. The one who passes every pressure straight down earns only compliance.",ship:"When the office or the charterer demands the impossible, you absorb it and translate it into something safe and doable, or you push back. When a man is treated unfairly by the system, you are his advocate inside it. The crew sees who you protect.",cost:"An officer who feeds his crew to every pressure from above to protect himself is quickly known for it. They will give him nothing extra, warn him of nothing, and let him walk into the problems he would have seen if they trusted him."},
+{n:8,t:"Train Your Replacement",law:"You make every man under you more capable, including capable of your job.",why:"Insecure leaders hoard knowledge to make themselves indispensable. Strong ones give it away, because a crew that is trained one rank deep turns crises into inconveniences. Your value is not in being the only one who can, it is in how many you have made able.",ship:"Teach the cadet what you wish you had been taught. Let the Third Officer run the operation under your eye. Explain your reasoning, not just your orders, so the next man can think the way you think when you are not there.",cost:"Hoard your knowledge and you build a department that collapses the moment you are off watch, ashore, or relieved. The officer who cannot be replaced cannot be promoted either, because no one can take the job he refuses to teach."},
+{n:9,t:"Stay Honest When It Costs",law:"You tell the truth in the log, to the inspector, and to the Master, especially when a lie would be easier.",why:"Integrity is only tested when honesty is expensive. Anyone is honest when it is free. The officer who signs only what the ship actually measured, who reports the near-miss that makes him look bad, builds a name that is worth more than any single voyage.",ship:"The cargo figure is short and the terminal wants it hidden. The rest hours do not add up. The damage happened on your watch. Each is a moment where the easy lie beckons and the hard truth protects you, the crew, and the next ship.",cost:"One discovered lie erases years of trust, and at sea the records are cross-checked, the truth surfaces, and the officer who falsified becomes the story. The cover-up is almost always worse than the thing it hid."},
+{n:10,t:"Decide",law:"When the moment comes, you make the call and carry it.",why:"A crew can forgive a wrong decision made clearly far more easily than no decision at all. In a developing situation, hesitation is itself a choice, usually the worst one. Command means owning the weight of deciding with incomplete information, on the clock the situation sets.",ship:"The weather is turning, the channel is narrowing, the casualty is bleeding. You weigh what you have, you decide, and you commit, calmly and out loud. You can adjust as new facts arrive, but you never freeze, and you never hand the weight to someone who cannot carry it.",cost:"The officer who cannot decide forces the decision onto the crew, the clock, or chance, none of which care about the ship. Indecision in command is not caution, it is the abdication of the one duty rank exists to discharge."},
+{n:11,t:"Be Fair, Visibly",law:"The unpleasant jobs and the good ones are shared by a system the crew can see.",why:"Crews do not demand to be treated softly. They demand to be treated fairly, and to be able to verify it. Favoritism, real or suspected, poisons a deck faster than hard work ever could. Fairness that no one can see is not believed.",ship:"Rotate the dirty jobs and the overtime on a system anyone can check. Apply the standard to your friend exactly as to the man you dislike. When you must treat two men differently, explain why, openly, so it reads as judgment, not favoritism.",cost:"The moment the crew believes there are favorites, every assignment becomes evidence of bias, every correction becomes personal, and the men outside the favored circle stop trying. Hidden fairness and open unfairness destroy a deck the same way."},
+{n:12,t:"Listen First",law:"Before you judge or order, you understand. You ask, and you actually hear the answer.",why:"The officer who decides before he understands makes confident, fast, wrong calls, and the crew watches him do it. Listening first is not weakness; it is how you get the information that makes your decisions right and your corrections fair.",ship:"Before you discipline, you ask for his side and mean it. Before you change a procedure, you ask the men who run it why it is done that way. The old hand often knows something the manual does not. Hear it before you overrule it.",cost:"An officer who does not listen is led by his assumptions, and his crew learns to stop telling him things, even things he urgently needs to know. He ends up the last man on the ship to understand his own deck."},
+{n:13,t:"Hold the Standard",law:"What you walk past, you accept. So you do not walk past what matters.",why:"The real standard on a ship is not what is written in the SMS; it is the worst thing the officer in charge is willing to ignore. Every time you let a small unsafe thing slide, you have just reset the standard lower, and the crew has noticed.",ship:"The missing pin, the skipped check, the half-done lashing. Stopping to fix the small thing, calmly and every time, is how you hold the line. Not with shouting, with consistency. The crew calibrates to what you consistently require.",cost:"Let the standard slip on small things and it will not hold on large ones. The deck that is allowed sloppy housekeeping will, on a bad night, be sloppy with the thing that kills. Standards do not fail suddenly; they erode quietly, with permission."},
+{n:14,t:"Carry the Weight Alone When You Must",law:"Some burdens of command are yours to carry without passing the fear downward.",why:"There are things an officer knows, worries about, and must act on without spreading the alarm to the crew. Part of command is absorbing pressure so your people can do their jobs steadily. You may share the work, but some of the weight is yours alone.",ship:"You are worried about the forecast, the stability margin, the thing the office is not telling you. You plan for it, you prepare quietly, you keep your people focused and calm, without dumping your every fear onto them and paralyzing the deck.",cost:"An officer who unloads every worry onto the crew creates a frightened, distracted team, exactly when he needs a steady one. But the opposite also has a cost: carry too much truly alone, and you make errors no one could catch. Know which weight to share and which to hold."},
+{n:15,t:"Leave It Better",law:"You hand over your watch, your department, and your ship better than you found them.",why:"An officer is a steward, not an owner. The measure of your command is not what you took from it but what you left: a better-trained crew, cleaner records, safer practices, men who grew under you. This is the quiet legacy that outlasts any single voyage.",ship:"A complete handover, not a coasting last week. The cadet you brought on. The procedure you fixed. The near-miss you turned into a lesson the whole crew kept. You leave the next officer a department that runs, and the crew a standard they are proud to hold.",cost:"The officer who coasts, who leaves messes for his relief, who trains no one and fixes nothing, is remembered exactly that way, by the crew, by the reliefs, and by the office that decides his next ship. Stewardship is noticed as surely as its absence."}
+];
+
 /* ============ BADGES ============ */
 const BADGES = [
  {id:'first-watch', t:'First Watch', d:'Complete your first module', ic:'⚓', test:s=>s.doneModules.length>=1},
@@ -2550,14 +2603,12 @@ const ICONS = {
 };
 const NAV = [
  {id:'dash', t:'Dashboard', ic:'dash'},
- {id:'library', t:'Library', ic:'library'},
- {id:'scen', t:'Scenarios', ic:'scen'},
+ {id:'library', t:'Leadership', ic:'library'},
  {id:'power', t:'Power', ic:'power'},
- {id:'laws', t:'48 Laws', ic:'laws'},
- {id:'conflict', t:'Conflict', ic:'conflict'},
- {id:'quotes', t:'Quotes', ic:'quotes'},
+ {id:'scen', t:'Scenarios', ic:'scen'},
  {id:'tools', t:'Tools', ic:'tools'}
 ];
+const BNAV_SHORT = {dash:'Home', library:'Lead', power:'Power', scen:'Cases', tools:'Tools'};
 /* category icons for the 12 scenario groups */
 const SVG_O = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">';
 const CAT_ICONS = [
@@ -2581,7 +2632,7 @@ let route = {view:'dash'};
 
 function renderNav(){
   const mk = id => NAV.map(n =>
-    `<button data-v="${n.id}" class="${route.view===n.id?'active':''}" aria-label="${n.t}">${ICONS[n.ic]}<span>${id==='bnav'?n.t.slice(0,7):n.t}</span></button>`).join('');
+    `<button data-v="${n.id}" class="${route.view===n.id?'active':''}${n.id==='power'?' navpower':''}" aria-label="${n.t}">${ICONS[n.ic]}<span>${id==='bnav'?(BNAV_SHORT[n.id]||n.t):n.t}</span></button>`).join('');
   document.getElementById('rail').innerHTML = mk('rail');
   document.getElementById('bnav').innerHTML = mk('bnav');
   document.querySelectorAll('#rail button,#bnav button').forEach(b =>
@@ -2787,7 +2838,7 @@ VIEWS.dash = () => {
   const chDone = S.doneChallenges.includes(chIdx);
   const prog = next ? Math.round(100*(S.xp - rank.xp)/(next.xp - rank.xp)) : 100;
   return `
-  <section class="hero card gold">
+  <section class="hero card gold compact">
     <svg class="chartlines" aria-hidden="true" preserveAspectRatio="none" viewBox="0 0 400 240">
       <g stroke="var(--brass)" stroke-width=".4" opacity=".18" fill="none">
         <path d="M0 60h400M0 120h400M0 180h400M80 0v240M160 0v240M240 0v240M320 0v240"/>
@@ -2801,8 +2852,8 @@ VIEWS.dash = () => {
     </svg>
     <div class="eyebrow">Master of Command</div>
     <h1>Welcome back, Officer.</h1>
-    <p class="muted">Authority is built daily — in calm orders, fair calls, and steady hands.</p>
-    <div class="herorow">
+    <p class="muted herosub">Authority is built daily, in calm orders, fair calls, and steady hands.</p>
+        <div class="herorow">
       ${ringHTML(score)}
       <div style="flex:1;min-width:0">
         <div class="rankline">${stripesHTML(rank.stripes)}<span class="rankname">${rank.name}</span></div>
@@ -2810,17 +2861,11 @@ VIEWS.dash = () => {
         <div class="bar"><i style="width:${prog}%"></i></div>
       </div>
     </div>
-    <div class="statline">
-      <div class="stat"><b class="cnt" data-v="${S.doneModules.length}" data-suf="/${MODULES.length}">0/${MODULES.length}</b><span>Modules</span></div>
-      <div class="stat"><b class="cnt" data-v="${S.doneScenarios.length}" data-suf="/${SCENARIOS.length}">0/${SCENARIOS.length}</b><span>Scenarios</span></div>
-      <div class="stat"><b class="cnt" data-v="${S.doneChallenges.length}" data-suf="">0</b><span>Challenges</span></div>
-      <div class="stat"><b class="cnt" data-v="${S.streak}" data-suf="">0</b><span>Day streak</span></div>
-    </div>
   </section>
 
-  ${voyageHTML()}
-
   ${courseCardHTML()}
+
+  ${voyageHTML()}
 
   ${reviewCardHTML()}
 
@@ -2884,8 +2929,20 @@ BIND.dash = () => {
 
 /* ---------- LIBRARY ---------- */
 VIEWS.library = () => `
-  <div class="section-head"><h2>Leadership Library</h2>${S.doneModules.length>=MODULES.length?'<span class="laurel">&#10070; Library mastered</span>':`<span class="muted small">${S.doneModules.length}/${MODULES.length} complete</span>`}</div>
-  <p class="muted" style="margin-bottom:16px">Twenty modules on command, influence, and human nature — synthesized from the world’s leading leadership and psychology literature, adapted for the deck of a working ship.</p>
+  <div class="section-head"><h2>Leadership</h2></div>
+  <div class="card law-hero" onclick="show('code')" style="cursor:pointer;margin-bottom:18px">
+    <div class="law-hero-bg" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3 4 6v6c0 4.5 3.2 7.4 8 9 4.8-1.6 8-4.5 8-9V6l-8-3Z"/><path d="m9 12 2 2 4-4"/></svg>
+    </div>
+    <div class="law-hero-in">
+      <div class="eyebrow">The creed of command</div>
+      <h2 style="font-size:1.5rem;margin:4px 0 6px">The Officer's Code</h2>
+      <p class="muted small" style="max-width:430px">Fifteen principles of honourable command. Where the 48 Laws show how power behaves, the Code is how a good officer stays on the right side of it.</p>
+      <span class="law-hero-cta">Read the Code ›</span>
+    </div>
+  </div>
+  <div class="section-head"><h2 style="font-size:1.08rem">Leadership Modules</h2>${S.doneModules.length>=MODULES.length?'<span class="laurel">&#10070; Mastered</span>':`<span class="muted small">${S.doneModules.length}/${MODULES.length}</span>`}</div>
+  <p class="muted small" style="margin-bottom:14px">Twenty modules on command, influence, and human nature, in plain English for the deck of a working ship.</p>
   <div class="grid">
     ${MODULES.map(m=>`<div class="row" onclick="show('module','${m.id}')">
       <div class="ic">${m.icon}</div>
@@ -2982,10 +3039,15 @@ VIEWS.scen = () => {
   return `
   <div class="section-head"><h2>Maritime Scenarios</h2>${S.doneScenarios.length>=SCENARIOS.length?'<span class="laurel">&#10070; All seas sailed</span>':`<span class="muted small">${S.doneScenarios.length}/${SCENARIOS.length} worked</span>`}</div>
   <p class="muted" style="margin-bottom:14px">Real situations from real decks. Read the situation, decide what you would do — then study the best response, the worst, and the psychology underneath.</p>
-  <div class="card gold" style="margin-bottom:14px">
-    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div><div class="eyebrow">Case Files</div><p class="muted small" style="margin-top:4px">${CASES.length} real casualties read through the command lens — El Faro, Herald, Concordia and more.</p></div>
-      <button class="btn ghost" onclick="show('cases')">Open files</button>
+  <div class="card casehero" onclick="show('cases')" style="cursor:pointer;margin-bottom:16px">
+    <div class="casehero-bg" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7Z"/><path d="M8 13h8M8 16h5"/></svg>
+    </div>
+    <div class="casehero-in">
+      <div class="eyebrow" style="color:var(--tension)">⚓ Real casualties · learned the hard way</div>
+      <h2 style="font-size:1.45rem;margin:5px 0 6px">The Case Files</h2>
+      <p class="muted small" style="max-width:430px">${CASES.length} ships, ${CASES.length} inquiries, read through the command lens. El Faro. Titanic. Piper Alpha. The voyages that wrote the rules in steel and salt water.</p>
+      <span class="casehero-cta">Open the files ›</span>
     </div>
   </div>
   <div class="chiprow" style="margin-bottom:16px">
@@ -3055,21 +3117,83 @@ BIND.scenario = i => {
 };
 
 /* ---------- POWER & INFLUENCE ---------- */
+VIEWS.code = () => `${back('library','Leadership')}
+  <div class="section-head"><h2>The Officer's Code</h2><span class="muted small">15 principles</span></div>
+  <div class="callout gold" style="margin-bottom:14px"><div class="ctitle">The creed of command</div>The 48 Laws of Power show you how power actually behaves, including its darker moves. The Officer's Code is the other half: the principles that keep a leader honourable while still being effective. Where a Law tells you what works, the Code tells you what is worth doing. Hold both, and you command with strength and a clear conscience.</div>
+  ${CODE.map(c=>`
+  <div class="card law" style="margin-bottom:10px;cursor:pointer" onclick="openCode(${c.n})">
+    <div class="lawnum">${c.n}</div>
+    <div style="flex:1"><div class="lt">${c.t}</div><p>${c.law}</p></div>
+    <span class="chev">›</span>
+  </div>`).join('')}
+  <div class="callout psy" style="margin-top:14px"><div class="ctitle">Code and Laws together</div>Read the Code here, then read the 48 Laws under Power. The strongest officers know both: the Laws so they are never manipulated, the Code so they never become the kind of leader the Laws warn you about.</div>`;
+
+let curCode = 1;
+window.openCode = n => { curCode = n; show('codedetail'); };
+window.codeStep = d => {
+  curCode += d;
+  if (curCode < 1) curCode = CODE.length;
+  if (curCode > CODE.length) curCode = 1;
+  show('codedetail');
+};
+VIEWS.codedetail = () => {
+  const c = CODE.find(x => x.n === curCode);
+  return `${back('code','The Officer\'s Code')}
+  <div class="lawpager" id="codeSwipe">
+    <div class="card gold" style="margin-bottom:14px">
+      <div class="medalrow"><div class="medal mono">${c.n}</div><div><div class="eyebrow">Principle ${c.n} of ${CODE.length}</div><h2 style="font-size:1.35rem;margin-top:2px;line-height:1.2">${c.t}</h2></div></div>
+    </div>
+    <div class="callout"><div class="ctitle">The principle</div>${c.law}</div>
+    <div class="callout psy"><div class="ctitle">Why it matters</div>${c.why}</div>
+    <div class="callout best"><div class="ctitle">On the ship</div>${c.ship}</div>
+    <div class="callout worst"><div class="ctitle">The cost of breaking it</div>${c.cost}</div>
+    <div class="lawnav">
+      <button class="btn ghost" onclick="codeStep(-1)" aria-label="Previous principle">‹ Prev</button>
+      <span class="lawcount mono">${c.n} / ${CODE.length}</span>
+      <button class="btn ghost" onclick="codeStep(1)" aria-label="Next principle">Next ›</button>
+    </div>
+    <p class="muted small" style="text-align:center;margin-top:10px">Use Prev / Next to move through the Code, or swipe right to go back</p>
+  </div>`;
+};
+
 VIEWS.power = () => `
   <div class="section-head"><h2>Power &amp; Influence</h2></div>
-  <p class="muted" style="margin-bottom:16px">Six sources of shipboard power — what each is, when to use it, when it backfires, and how it plays out at sea. Rank is only one of them, and it is the weakest one to depend on alone.</p>
-  ${POWER.map(p=>`
-  <div class="card" style="margin-bottom:14px">
-    <div class="medalrow"><div class="medal">${p.icon}</div><h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.1rem">${p.t}</h3></div>
-    <p style="color:var(--text-soft);font-size:.92rem;margin-bottom:12px">${p.d}</p>
-    <div class="callout best"><div class="ctitle">Use it when</div><ul class="clean">${p.use.map(u=>`<li>${u}</li>`).join('')}</ul></div>
-    <div class="callout worst"><div class="ctitle">Avoid it when</div><ul class="clean">${p.avoid.map(a=>`<li>${a}</li>`).join('')}</ul></div>
-    <div class="callout gold"><div class="ctitle">At sea</div>${p.sea}</div>
-  </div>`).join('')}
-  <div class="callout psy"><div class="ctitle">The ethical line</div>Every source above can be used to build a safer, stronger crew — or to manipulate one. The test is simple: influence that survives being explained out loud to the person influenced is leadership; influence that depends on them never finding out is manipulation, and on a ship, they always find out.</div>`;
+  <div class="card law-hero" onclick="show('laws')" style="cursor:pointer;margin-bottom:18px">
+    <div class="law-hero-bg" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v18M5 7l7-4 7 4"/><path d="M5 7l-2.5 6a3.5 3.5 0 0 0 7 0L7 7M19 7l-2.5 6a3.5 3.5 0 0 0 7 0L21 7"/><path d="M8 21h8"/></svg>
+    </div>
+    <div class="law-hero-in">
+      <div class="eyebrow">The command edition</div>
+      <h2 style="font-size:1.5rem;margin:4px 0 6px">The 48 Laws of Power</h2>
+      <p class="muted small" style="max-width:420px">Every law of power, rewritten for the deck. How to use it, why it works, and how to spot it when it is used on you.</p>
+      <span class="law-hero-cta">Open all 48 laws ›</span>
+    </div>
+  </div>
+  <div class="section-head"><h2 style="font-size:1.08rem">The six sources of power</h2></div>
+  <p class="muted small" style="margin-bottom:14px">Rank is only one of them, and the weakest to lean on alone. Tap any source to go deeper.</p>
+  <div class="grid">
+    ${POWER.map((p,i)=>`<div class="row" onclick="show('powerdetail',${i})">
+      <div class="ic">${p.icon}</div>
+      <div class="tx"><b>${p.t.split(' \u2014 ')[0]}</b><span>${p.t.split(' \u2014 ')[1]||p.d.slice(0,60)}</span></div>
+      <span class="chev">›</span>
+    </div>`).join('')}
+  </div>
+  <div class="callout psy" style="margin-top:16px"><div class="ctitle">The ethical line</div>Every source here can build a safer, stronger crew, or manipulate one. The test is simple: influence that survives being explained out loud to the person influenced is leadership. Influence that depends on them never finding out is manipulation, and on a ship, they always find out.</div>`;
+
+VIEWS.powerdetail = (i) => {
+  const p = POWER[i];
+  return `${back('power','Power')}
+  <div class="card gold" style="margin-bottom:14px">
+    <div class="medalrow"><div class="medal">${p.icon}</div><div><div class="eyebrow">Source of power</div><h2 style="font-size:1.3rem;margin-top:2px;line-height:1.2">${p.t}</h2></div></div>
+  </div>
+  <div class="callout"><div class="ctitle">What it is</div>${p.d}</div>
+  <div class="callout best"><div class="ctitle">Use it when</div><ul class="clean">${p.use.map(u=>`<li>${u}</li>`).join('')}</ul></div>
+  <div class="callout worst"><div class="ctitle">Avoid it when</div><ul class="clean">${p.avoid.map(a=>`<li>${a}</li>`).join('')}</ul></div>
+  <div class="callout gold"><div class="ctitle">At sea</div>${p.sea}</div>`;
+};
 
 /* ---------- CONFLICT CENTER ---------- */
-VIEWS.conflict = () => `
+VIEWS.conflict = () => `${back('tools','Tools')}
   <div class="section-head"><h2>Conflict Resolution Center</h2></div>
   <p class="muted" style="margin-bottom:16px">Frameworks, word-for-word scripts, and procedures — from the first raised voice to the signed report.</p>
 
@@ -3102,7 +3226,7 @@ window.favQ = (idx, ev) => {
 VIEWS.quotes = () => {
   const list = QUOTES.filter((q,qi) => qFilter===-2 ? S.favQuotes.includes(qi) : (qFilter<0 || q.c===qFilter));
   S.quotesSeen = Math.max(S.quotesSeen, Math.min(QUOTES.length, S.quotesSeen + Math.min(list.length, 12))); save(); checkBadges();
-  return `
+  return `${back('tools','Tools')}
   <div class="section-head"><h2>Command Quote Database</h2></div>
   <div class="chiprow" style="margin-bottom:16px">
     <button class="chip ${qFilter===-1?'on':''}" onclick="qFilter=-1;show('quotes')">All</button>
@@ -3132,6 +3256,8 @@ VIEWS.tools = () => `
   </div>
   <div class="section-head"><h2 style="font-size:1.05rem">References & Records</h2></div>
   <div class="grid">
+    <div class="row" onclick="show('quotes')"><div class="ic">❝</div><div class="tx"><b>Command Quotes</b><span>76 quotes on leadership and power, each with a plain-English meaning</span></div><span class="chev">›</span></div>
+    <div class="row" onclick="show('conflict')"><div class="ic">🕊️</div><div class="tx"><b>Conflict Resolution Center</b><span>Frameworks, scripts, de-escalation, mediation, investigation and documentation</span></div><span class="chev">›</span></div>
     <div class="row" onclick="show('phrases')"><div class="ic">🗣️</div><div class="tx"><b>Leadership Phrasebook</b><span>Word-for-word lines for corrections, refusals, inspections, and hard moments</span></div><span class="chev">›</span></div>
     <div class="row" onclick="show('crew')"><div class="ic">📋</div><div class="tx"><b>Crew Motivation Tracker</b><span>Private morale log: moods, motivators, and watch-outs for your team</span></div><span class="chev">›</span></div>
   </div>
@@ -3467,6 +3593,7 @@ const LAWS = [
 VIEWS.laws = () => `
   <div class="section-head"><h2>The 48 Laws of Power</h2><span class="muted small">Command edition</span></div>
   <div class="callout gold" style="margin-bottom:14px"><div class="ctitle">Read before using</div>These laws describe how power actually behaves, including its ugliest moves. They are written here in our own words, each with a shipboard application. Some are tools to use; others are moves to recognize when used <b>on you</b>. The standing rule of this academy: influence that survives being explained aloud to the person influenced is leadership. Everything else is manipulation, and on a ship it always surfaces.</div>
+  <div class="callout psy" style="margin-bottom:14px"><div class="ctitle">The counterpart: The Officer's Code</div>The Laws show how power works. They do not tell you who to be. For that, read <b>The Officer's Code</b> in the Leadership tab, fifteen principles of honourable command. Use the Laws to stay sharp and unmanipulated; use the Code to stay the kind of leader worth following.</div>
   ${LAWS.map(l=>`
   <div class="card law" style="margin-bottom:10px;cursor:pointer" onclick="openLaw(${l.n})">
     <div class="lawnum">${l.n}</div>
@@ -3586,7 +3713,7 @@ function dayDone(d){ return COURSE[d].tasks.every((_,ti)=>taskDone(d,ti)); }
 function currentDay(){ for (let d=0; d<COURSE.length; d++){ if (!S.courseDays.includes(d)) return d; } return COURSE.length; }
 window.taskGo = (d, ti) => {
   const t = COURSE[d].tasks[ti];
-  if (t.m) { S.courseChecks[d+':'+ti] = !S.courseChecks[d+':'+ti]; save(); show('course'); return; }
+  if (t.m) { S.courseChecks[d+':'+ti] = !S.courseChecks[d+':'+ti]; save(); curCourseDay = d; show('courseday'); return; }
   if (t.k==='module') show('module', t.id);
   else if (t.k==='scen') show('scenario', t.i);
   else if (t.k==='sim') runSim(t.key, t.i);
@@ -3598,15 +3725,16 @@ window.completeDay = d => {
   S.courseDays.push(d); save();
   addXP(20, 'Day ' + (d+1) + ' complete');
   checkBadges();
-  show('course');
+  toast('Day ' + (d+1) + ' complete. +20 XP');
+  curCourseDay = d; show('courseday');
 };
 function courseCardHTML(){
   const cd = currentDay();
   if (cd >= COURSE.length) return `<div class="card gold" style="margin-bottom:14px"><div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap"><div><div class="eyebrow">30-Day Command Course</div><p class="muted small" style="margin-top:6px">Graduated. All 30 days complete — the course is yours to revisit anytime.</p></div><span class="laurel">&#127891; Graduate</span></div></div>`;
   return `<div class="card" style="margin-bottom:14px">
     <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap">
-      <div style="flex:1;min-width:180px"><div class="eyebrow">30-Day Command Course</div>
-      <p class="muted small" style="margin:6px 0 8px">Day ${cd+1} of 30 — ${COURSE[cd].t}</p>
+      <div style="flex:1;min-width:180px"><div class="eyebrow">30-Day Command Course · Week ${weekFor(cd).n}</div>
+      <p class="muted small" style="margin:6px 0 8px">Day ${cd+1} of 30 · ${COURSE[cd].t}</p>
       <div class="bar"><i style="width:${Math.round(100*S.courseDays.length/COURSE.length)}%"></i></div></div>
       <button class="btn primary" onclick="show('course')">${S.courseDays.length?'Continue':'Start course'}</button>
     </div>
@@ -3614,35 +3742,81 @@ function courseCardHTML(){
 }
 VIEWS.course = () => {
   const cd = currentDay();
+  const done = S.courseDays.length;
+  const pct = Math.round(100*done/COURSE.length);
+  const graduated = cd >= COURSE.length;
   return `${back('dash','Dashboard')}
-  <div class="section-head"><h2>30-Day Command Course</h2><span class="muted small">${S.courseDays.length}/30 days</span></div>
-  <p class="muted" style="margin-bottom:14px">A guided path through the whole academy: one focused day at a time. Tasks tick automatically as you complete them anywhere in the app; reading tasks you tick yourself.</p>
-  ${COURSE.map((day,d)=>{
-    const done = S.courseDays.includes(d);
-    const locked = d > cd;
-    const open = d === cd;
-    if (!open) return `<div class="row" style="${locked?'opacity:.45':''}" ${done?`onclick="show('courseday',${d})"`:''}>
-      <div class="ic mono">${String(d+1).padStart(2,'0')}</div>
-      <div class="tx"><b>${day.t}</b><span>${day.tasks.length} task${day.tasks.length>1?'s':''}</span></div>
-      ${done?'<span class="done">✓</span>':(locked?'<span class="muted small mono">locked</span>':'')}
-      ${done?'<span class="chev">›</span>':''}
-    </div>`;
-    return `<div class="card gold" style="margin:6px 0 10px">
-      <div class="eyebrow">Day ${d+1} · current</div>
-      <h3 style="font-family:'Marcellus',serif;color:var(--brass-hi);font-size:1.15rem;margin:4px 0 10px">${day.t}</h3>
-      ${day.tasks.map((t,ti)=>{
-        const td = taskDone(d,ti);
-        return `<div class="opt ${td?'good':''}" style="display:flex;align-items:center;gap:10px" onclick="taskGo(${d},${ti})">
-          <span class="mono" style="flex:none">${td?'✓':(t.m?'☐':'›')}</span><span style="flex:1">${t.l}${t.m?' <span class=\"muted small\">(tap to tick)</span>':''}</span>
+  <div class="card course-hero" style="margin-bottom:16px">
+    <div class="eyebrow">30-Day Command Course</div>
+    <h2 style="font-size:1.4rem;margin:4px 0 4px">${graduated?'Course complete':'Day '+(cd+1)+' of 30'}</h2>
+    <p class="muted small" style="margin-bottom:12px">${graduated?'You have walked the full path from presence to command. Revisit any day anytime.':(COURSE[cd].t+' \u00b7 '+weekFor(cd).t)}</p>
+    <div class="bar"><i style="width:${pct}%"></i></div>
+    <p class="muted small mono" style="margin-top:8px">${done}/30 days complete</p>
+    ${graduated?'<div class="laurel" style="margin-top:12px">\u2766 Course Graduate</div>':`<button class="btn primary" style="margin-top:14px" onclick="openDay(${cd})">${done?'Continue Day '+(cd+1):'Begin Day 1'}</button>`}
+  </div>
+  ${COURSE_WEEKS.map(w=>{
+    const wDays = []; for(let d=w.range[0]; d<=w.range[1]; d++) wDays.push(d);
+    const wDone = wDays.filter(d=>S.courseDays.includes(d)).length;
+    const wComplete = wDone===wDays.length;
+    return `
+    <div class="section-head" style="margin-top:18px"><h2 style="font-size:1.04rem">Week ${w.n} \u00b7 ${w.t}</h2>${wComplete?'<span class="laurel">\u2713</span>':`<span class="muted small mono">${wDone}/${wDays.length}</span>`}</div>
+    <p class="muted small" style="margin:-4px 0 10px">${w.d}</p>
+    <div class="grid">
+      ${wDays.map(d=>{
+        const dn = S.courseDays.includes(d), locked = d>cd, cur = d===cd;
+        return `<div class="row courseday-row ${cur?'cur':''}" style="${locked?'opacity:.4':''}" ${locked?'':`onclick="openDay(${d})"`}>
+          <div class="ic mono" style="${dn?'color:var(--good)':(cur?'color:var(--brass-hi)':'')}">${dn?'\u2713':String(d+1).padStart(2,'0')}</div>
+          <div class="tx"><b>${COURSE[d].t}</b><span>${cur?'Current day \u00b7 ':''}${COURSE[d].tasks.length} task${COURSE[d].tasks.length>1?'s':''}</span></div>
+          ${locked?'<span class="muted small mono">locked</span>':'<span class="chev">\u203a</span>'}
         </div>`;
       }).join('')}
-      <div style="margin-top:12px"><button class="btn ${dayDone(d)?'primary':'ghost'}" ${dayDone(d)?'':'disabled'} onclick="completeDay(${d})">${dayDone(d)?'Complete Day '+(d+1)+'  +20 XP':'Finish the tasks above to complete the day'}</button></div>
     </div>`;
   }).join('')}`;
 };
-VIEWS.courseday = d => `${back('course','Course')}
-  <div class="section-head"><h2>Day ${d+1} — ${COURSE[d].t}</h2><span class="laurel">✓ Complete</span></div>
-  <div class="grid">${COURSE[d].tasks.map((t,ti)=>`<div class="row" onclick="taskGo(${d},${ti})"><div class="ic mono">${ti+1}</div><div class="tx"><b>${t.l}</b></div><span class="done">✓</span><span class="chev">›</span></div>`).join('')}</div>`;
+
+let curCourseDay = 0;
+window.openDay = d => { curCourseDay = d; show('courseday'); };
+window.courseDayStep = delta => {
+  const cd = currentDay();
+  let n = curCourseDay + delta;
+  if (n < 0) n = 0;
+  if (n > Math.min(cd, COURSE.length-1)) n = Math.min(cd, COURSE.length-1); // cannot open locked days
+  curCourseDay = n; show('courseday');
+};
+VIEWS.courseday = () => {
+  const d = curCourseDay, day = COURSE[d], w = weekFor(d);
+  const done = S.courseDays.includes(d);
+  const cd = currentDay();
+  const allTasksDone = day.tasks.every((_,ti)=>taskDone(d,ti));
+  const canPrev = d>0, canNext = d < Math.min(cd, COURSE.length-1);
+  return `${back('course','Course')}
+  <div class="card gold" style="margin-bottom:14px">
+    <div class="eyebrow">Week ${w.n} \u00b7 ${w.t}</div>
+    <div style="display:flex;align-items:baseline;gap:10px;margin-top:4px">
+      <span class="mono" style="font-size:1.5rem;color:var(--brass-hi)">${String(d+1).padStart(2,'0')}</span>
+      <h2 style="font-size:1.5rem">${day.t}</h2>
+    </div>
+    ${done?'<div class="laurel" style="margin-top:8px">\u2713 Day complete</div>':''}
+  </div>
+  <div class="callout"><div class="ctitle">Today's focus</div>${day.f}</div>
+  <div class="section-head" style="margin-top:8px"><h2 style="font-size:1.02rem">Today's tasks</h2></div>
+  ${day.tasks.map((t,ti)=>{
+    const td = taskDone(d,ti);
+    return `<div class="opt ${td?'good':''}" style="display:flex;align-items:center;gap:10px" onclick="taskGo(${d},${ti})">
+      <span class="mono" style="flex:none;width:18px;text-align:center">${td?'\u2713':(t.m?'\u2610':'\u203a')}</span>
+      <span style="flex:1">${t.l}${t.m?' <span class=\'muted small\'>(tap to tick)</span>':''}</span>
+    </div>`;
+  }).join('')}
+  <div style="margin-top:14px">
+    <button class="btn ${allTasksDone&&!done?'primary':'ghost'}" ${allTasksDone&&!done?'':'disabled'} onclick="completeDay(${d})">${done?'Day '+(d+1)+' complete \u2713':(allTasksDone?'Complete Day '+(d+1)+'  +20 XP':'Finish the tasks above')}</button>
+  </div>
+  <div class="callout gold" style="margin-top:16px"><div class="ctitle">Command thought</div><span style="font-family:'Marcellus',serif;font-style:italic;font-size:1.05rem;color:var(--brass-hi)">\u201c${day.th}\u201d</span></div>
+  <div class="lawnav" style="margin-top:16px">
+    <button class="btn ghost" onclick="courseDayStep(-1)" ${canPrev?'':'disabled'} style="flex:1">\u2039 Prev day</button>
+    <span class="lawcount mono">Day ${d+1} / 30</span>
+    <button class="btn ghost" onclick="courseDayStep(1)" ${canNext?'':'disabled'} style="flex:1">Next day \u203a</button>
+  </div>`;
+};
 
 /* ---------- CASE FILES ---------- */
 VIEWS.cases = () => `${back('scen','Scenarios')}

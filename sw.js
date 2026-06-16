@@ -1,4 +1,4 @@
-const CACHE = 'moc-v29';
+const CACHE = 'moc-v38';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
