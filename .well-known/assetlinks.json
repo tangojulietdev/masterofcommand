@@ -1,0 +1,8 @@
+[{
+      "relation": ["delegate_permission/common.handle_all_urls"],
+      "target": {
+        "namespace": "android_app",
+        "package_name": "io.github.tangojulietdev.twa",
+        "sha256_cert_fingerprints": ["15:3C:BB:9D:02:06:D7:10:2A:A3:B5:EC:78:87:43:CE:C9:17:61:72:24:AC:54:6A:80:89:A8:03:E4:B6:AF:EC"]
+      }
+    }]
